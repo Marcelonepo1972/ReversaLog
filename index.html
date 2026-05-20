@@ -1509,6 +1509,55 @@
                 select.appendChild(newOpt);
             });
         }
+
+        // ===== AUTOCOMPLETE COM DISPLAY DO NOME =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const campos = [
+                {input: 'ret_loja', datalist: 'ret_loja_list'},
+                {input: 'ret_operador', datalist: 'ret_operador_list'},
+                {input: 'ret_conferente', datalist: 'ret_conferente_list'},
+                {input: 'tri_operador', datalist: 'tri_operador_list'},
+                {input: 'sai_operador', datalist: 'sai_operador_list'},
+                {input: 'sai_conferente', datalist: 'sai_conferente_list'}
+            ];
+
+            campos.forEach(campo => {
+                const input = document.getElementById(campo.input);
+                const datalist = document.getElementById(campo.datalist);
+                
+                if (!input || !datalist) return;
+
+                // Ao selecionar um item da datalist
+                input.addEventListener('change', function() {
+                    const selectedOption = Array.from(datalist.options).find(
+                        opt => opt.text === this.value || opt.value === this.value
+                    );
+                    
+                    if (selectedOption) {
+                        this.value = selectedOption.text; // Mostra o nome
+                        this.dataset.value = selectedOption.value; // Guarda o código
+                    }
+                });
+
+                // Ao digitar, mostra apenas o nome
+                input.addEventListener('input', function() {
+                    // Filtra conforme digita
+                    const query = this.value.toLowerCase();
+                    const options = Array.from(datalist.options);
+                    
+                    datalist.innerHTML = '';
+                    options.forEach(opt => {
+                        if (opt.text.toLowerCase().includes(query)) {
+                            const newOpt = document.createElement('option');
+                            newOpt.value = opt.text; // Mostra texto
+                            newOpt.dataset.id = opt.value; // Guarda ID
+                            datalist.appendChild(newOpt);
+                        }
+                    });
+                });
+            });
+        });
+
     </script>
 </body>
 </html>
