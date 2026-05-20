@@ -774,9 +774,6 @@
                         <label>Selecione um Retorno *</label>
                         <select id="tri_retorno" onchange="autofillTriagem()">
                             <option value="">-- Selecione um Retorno --</option>
-                            <option value="ret_001">Piracicaba - NF 20234 - Caixa M (99 un) - 2026-05-20</option>
-                            <option value="ret_002">Carolina - NF 13003 - Caixa P (50 un) - 2026-05-18</option>
-                            <option value="ret_003">Bonfim - NF 15678 - Caixa G (30 un) - 2026-05-17</option>
                         </select>
                     </div>
 
@@ -1257,28 +1254,65 @@
                 return;
             }
             
+            // Coletar apenas caixas plásticas P, M, G e caradori
+            const caixasPlasticas = {
+                'CAIXA PLASTICA MODELO P': parseInt(document.getElementById('ret_qtd_fis_3')?.value || 0),
+                'CAIXA PLASTICA MODELO M': parseInt(document.getElementById('ret_qtd_fis_4')?.value || 0),
+                'CAIXA PLASTICA MODELO G': parseInt(document.getElementById('ret_qtd_fis_5')?.value || 0),
+                'CARADORI': parseInt(document.getElementById('ret_qtd_fis_6')?.value || 0)
+            };
+            
+            // Guardar retorno no array
+            const retorno = {
+                id: 'ret_' + Date.now(),
+                dataRecebimento: new Date().toISOString().split('T')[0],
+                loja: loja,
+                nf: nf,
+                materiais: caixasPlasticas
+            };
+            
+            retornosGuardados.push(retorno);
+            
             alert('✅ Retorno salvo com sucesso!\nNF: ' + nf + ' | Loja: ' + loja);
+            atualizarOpcoesTriagem();
             limparFormRetorno();
+        }
+
+        // Array para guardar retornos
+        let retornosGuardados = [];
+
+        // Atualizar dropdown de triagem com retornos salvos
+        function atualizarOpcoesTriagem() {
+            const select = document.getElementById('tri_retorno');
+            select.innerHTML = '<option value="">-- Selecione --</option>';
+            
+            retornosGuardados.forEach(ret => {
+                const option = document.createElement('option');
+                option.value = ret.id;
+                option.textContent = `${ret.nf} - ${ret.loja}`;
+                select.appendChild(option);
+            });
         }
 
         // TRIAGEM
         function autofillTriagem() {
-            const retorno = document.getElementById('tri_retorno').value;
-            if (retorno === 'ret_001') {
-                document.getElementById('tri_data_rec').value = '2026-05-20';
-                document.getElementById('tri_loja').value = 'Piracicaba';
-                document.getElementById('tri_nf').value = '20234';
-                document.getElementById('tri_qtd').value = '99';
-            } else if (retorno === 'ret_002') {
-                document.getElementById('tri_data_rec').value = '2026-05-18';
-                document.getElementById('tri_loja').value = 'Carolina';
-                document.getElementById('tri_nf').value = '13003';
-                document.getElementById('tri_qtd').value = '50';
-            } else if (retorno === 'ret_003') {
-                document.getElementById('tri_data_rec').value = '2026-05-17';
-                document.getElementById('tri_loja').value = 'Bonfim';
-                document.getElementById('tri_nf').value = '15678';
-                document.getElementById('tri_qtd').value = '30';
+            const retornoId = document.getElementById('tri_retorno').value;
+            const retorno = retornosGuardados.find(r => r.id === retornoId);
+            
+            if (retorno) {
+                // Preenche automaticamente os campos que vêm do retorno
+                document.getElementById('tri_data_rec').value = retorno.dataRecebimento;
+                document.getElementById('tri_loja').value = retorno.loja;
+                document.getElementById('tri_nf').value = retorno.nf;
+                
+                // Calcula quantidade total de caixas plásticas
+                const totalCaixas = Object.values(retorno.materiais).reduce((a, b) => a + b, 0);
+                document.getElementById('tri_qtd').value = totalCaixas;
+                
+                // Campos MANUAIS (não preenchidos):
+                // - tri_data_tri (Data da triagem)
+                // - tri_operador (Operador triagem)
+                // - tri_movimentacao (Op. Movimentação)
             }
         }
 
