@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Logística Reversa</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF7A00;
+            --primary-dark: #E66E00;
+            --secondary: #1a1a1a;
+            --accent: #00D4FF;
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --surface-alt: #252525;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border: #333333;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --danger: #f44336;
+            --grid: 8px;
+        }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: var(--grid);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--surface-alt) 100%);
+            border-bottom: 3px solid var(--primary);
+            padding: calc(var(--grid) * 2) var(--grid);
+            margin-bottom: calc(var(--grid) * 2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(255, 122, 0, 0.15);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--grid) * 2);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--grid);
+            margin-bottom: calc(var(--grid) * 2);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: calc(var(--grid) * 1.5) calc(var(--grid) * 2);
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'Courier Prime', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+            box-shadow: 0 0 16px var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .layout-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: calc(var(--grid) * 2);
+            margin-bottom: calc(var(--grid) * 2);
+        }
+
+        @media (max-width: 1200px) {
+            .layout-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            padding: calc(var(--grid) * 2);
+            border-radius: 4px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: calc(var(--grid) * 1.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: calc(var(--grid) * 1.5);
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: var(--grid);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: calc(var(--grid) * 1.2) var(--grid);
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Courier Prime', monospace;
+            font-size: 13px;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(255, 122, 0, 0.2);
+            background: var(--surface-alt);
+        }
+
+        input[readonly] {
+            background: rgba(255, 122, 0, 0.05);
+            border-color: var(--primary);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--grid);
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--grid);
+        }
+
+        .btn {
+            padding: calc(var(--grid) * 1.2) calc(var(--grid) * 2);
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier Prime', monospace;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--grid);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 8px 24px rgba(255, 122, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--surface-alt);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+            border: 1px solid #f44336;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .btn-danger:hover {
+            background: rgba(244, 67, 54, 0.2);
+        }
+
+        .btn-small {
+            padding: calc(var(--grid) * 0.8) var(--grid);
+            font-size: 11px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: var(--grid);
+            margin-top: calc(var(--grid) * 2);
+            flex-wrap: wrap;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        thead {
+            background: rgba(255, 122, 0, 0.1);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        th {
+            padding: calc(var(--grid) * 1.5) var(--grid);
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        td {
+            padding: var(--grid) calc(var(--grid) * 1.2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pendente {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid #FFC107;
+        }
+
+        .status-triado {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+        }
+
+        .status-finalizado {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00D4FF;
+            border: 1px solid #00D4FF;
+        }
+
+        .divergencia-positiva {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .divergencia-negativa {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: calc(var(--grid) * 1.5);
+            border-left: 4px solid;
+            border-radius: 3px;
+            margin-bottom: calc(var(--grid) * 2);
+            font-size: 13px;
+        }
+
+        .alert-info {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: #00D4FF;
+            color: #00D4FF;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--grid);
+            margin-bottom: calc(var(--grid) * 2);
+        }
+
+        .stat-card {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            padding: calc(var(--grid) * 1.5);
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: var(--grid) 0;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            margin-top: calc(var(--grid) * 4);
+            padding: var(--grid) 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">⚙ REVERSA</div>
+            <div class="user-info">
+                <div>Usuário: <strong>OPERADOR_01</strong></div>
+                <div>Perfil: <strong>OPERADOR</strong></div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('retorno')">
+                📦 Retorno de Materiais
+            </button>
+            <button class="tab-btn" onclick="switchTab('triagem')">
+                📋 Triagem
+            </button>
+            <button class="tab-btn" onclick="switchTab('saida')">
+                🚚 Saída de Fornecedores
+            </button>
+        </div>
+
+        <!-- TAB 1: RETORNO DE MATERIAIS -->
+        <div id="retorno" class="tab-content active">
+            <div class="layout-2col">
+                <div class="card">
+                    <div class="card-title">➕ Novo Retorno</div>
+                    
+                    <div class="form-group">
+                        <label>Data Recebimento *</label>
+                        <input type="date" id="ret_data" value="2026-05-20">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Loja *</label>
+                        <select id="ret_loja">
+                            <option value="">-- Selecione --</option>
+                            <option value="1">Carolina</option>
+                            <option value="2">Ponte Preta</option>
+                            <option value="3">Bonfim</option>
+                            <option value="30">Piracicaba</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nota Fiscal *</label>
+                        <input type="text" id="ret_nf" placeholder="Ex: 13003" maxlength="20">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Operador *</label>
+                        <select id="ret_operador">
+                            <option value="">-- Selecione --</option>
+                            <option value="op_01">ALBERTINO DOS SANTOS</option>
+                            <option value="op_02">ANTONIO JOSE SILVA</option>
+                            <option value="op_03">CESAR VINICIOS THOMAZ</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Conferente *</label>
+                        <select id="ret_conferente">
+                            <option value="">-- Selecione --</option>
+                            <option value="conf_01">THIAGO CRISTIANO</option>
+                            <option value="conf_02">GILDEVALDO ARAUJO</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="ret_obs" placeholder="Observações..."></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="salvarRetorno()">💾 Salvar Retorno</button>
+                        <button class="btn btn-secondary" onclick="limparFormRetorno()">🔄 Limpar</button>
+                        <button class="btn btn-secondary" onclick="exportarRetornoExcel()" style="background: #4CAF50;">📊 Exportar Excel</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📊 Volume de Materiais</div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Modelo</th>
+                                    <th>Qtd Física</th>
+                                    <th>Qtd NF</th>
+                                    <th>Divergência</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>PALETE PBR</td>
+                                    <td><input type="number" id="ret_qtd_fis_0" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(0)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_0" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(0)"></td>
+                                    <td style="text-align: center;" id="ret_div_0">-</td>
+                                </tr>
+                                <tr>
+                                    <td>PALETE DESC.</td>
+                                    <td><input type="number" id="ret_qtd_fis_1" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(1)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_1" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(1)"></td>
+                                    <td style="text-align: center;" id="ret_div_1">-</td>
+                                </tr>
+                                <tr>
+                                    <td>GAIOLA MADEIRA</td>
+                                    <td><input type="number" id="ret_qtd_fis_2" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(2)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_2" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(2)"></td>
+                                    <td style="text-align: center;" id="ret_div_2">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CAIXA PLASTICA MODELO P</td>
+                                    <td><input type="number" id="ret_qtd_fis_3" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(3)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_3" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(3)"></td>
+                                    <td style="text-align: center;" id="ret_div_3">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CAIXA PLASTICA MODELO M</td>
+                                    <td><input type="number" id="ret_qtd_fis_4" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(4)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_4" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(4)"></td>
+                                    <td style="text-align: center;" id="ret_div_4">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CAIXA PLASTICA MODELO G</td>
+                                    <td><input type="number" id="ret_qtd_fis_5" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(5)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_5" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(5)"></td>
+                                    <td style="text-align: center;" id="ret_div_5">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CARADORI</td>
+                                    <td><input type="number" id="ret_qtd_fis_6" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(6)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_6" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(6)"></td>
+                                    <td style="text-align: center;" id="ret_div_6">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CX DE FORNECEDOR</td>
+                                    <td><input type="number" id="ret_qtd_fis_7" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(7)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_7" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(7)"></td>
+                                    <td style="text-align: center;" id="ret_div_7">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CESTOS</td>
+                                    <td><input type="number" id="ret_qtd_fis_8" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(8)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_8" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(8)"></td>
+                                    <td style="text-align: center;" id="ret_div_8">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CARRINHO DE FLOR</td>
+                                    <td><input type="number" id="ret_qtd_fis_9" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(9)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_9" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(9)"></td>
+                                    <td style="text-align: center;" id="ret_div_9">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CARRINHO BIMBO</td>
+                                    <td><input type="number" id="ret_qtd_fis_10" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(10)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_10" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(10)"></td>
+                                    <td style="text-align: center;" id="ret_div_10">-</td>
+                                </tr>
+                                <tr>
+                                    <td>EURO</td>
+                                    <td><input type="number" id="ret_qtd_fis_11" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(11)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_11" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(11)"></td>
+                                    <td style="text-align: center;" id="ret_div_11">-</td>
+                                </tr>
+                                <tr>
+                                    <td>EURO CHEP</td>
+                                    <td><input type="number" id="ret_qtd_fis_12" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(12)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_12" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(12)"></td>
+                                    <td style="text-align: center;" id="ret_div_12">-</td>
+                                </tr>
+                                <tr>
+                                    <td>STRETCH</td>
+                                    <td><input type="number" id="ret_qtd_fis_13" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(13)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_13" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(13)"></td>
+                                    <td style="text-align: center;" id="ret_div_13">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: TRIAGEM -->
+        <div id="triagem" class="tab-content">
+            <div class="layout-2col">
+                <div class="card">
+                    <div class="card-title">🔍 Nova Triagem</div>
+                    
+                    <div class="alert alert-info">
+                        ℹ️ A triagem filtra apenas caixas plásticas (P, M, G, Caradori)
+                    </div>
+
+                    <div class="form-group">
+                        <label>Selecione um Retorno *</label>
+                        <select id="tri_retorno" onchange="autofillTriagem()">
+                            <option value="">-- Selecione um Retorno --</option>
+                            <option value="ret_001">Piracicaba - NF 20234 - Caixa M (99 un) - 2026-05-20</option>
+                            <option value="ret_002">Carolina - NF 13003 - Caixa P (50 un) - 2026-05-18</option>
+                            <option value="ret_003">Bonfim - NF 15678 - Caixa G (30 un) - 2026-05-17</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Data Recebimento (Auto)</label>
+                            <input type="date" id="tri_data_rec" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Triagem *</label>
+                            <input type="date" id="tri_data_tri" value="2026-05-20">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Loja (Auto)</label>
+                            <input type="text" id="tri_loja" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Nota Fiscal (Auto)</label>
+                            <input type="text" id="tri_nf" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quantidade (Auto)</label>
+                        <input type="number" id="tri_qtd" readonly>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Operador Triagem *</label>
+                            <select id="tri_operador">
+                                <option value="">-- Selecione --</option>
+                                <option value="tri_01">VINICIUS BATISTA</option>
+                                <option value="tri_02">ANTONIO RODRIGUES</option>
+                                <option value="tri_03">JOSE BISPO FERREIRA</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Op. Movimentação *</label>
+                            <select id="tri_movimentacao">
+                                <option value="">-- Selecione --</option>
+                                <option value="mov_01">OPERADOR MOVIMENTAÇÃO 1</option>
+                                <option value="mov_02">OPERADOR MOVIMENTAÇÃO 2</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="tri_obs" placeholder="Observações da triagem..."></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="salvarTriagem()">💾 Salvar Triagem</button>
+                        <button class="btn btn-secondary" onclick="limparFormTriagem()">🔄 Limpar</button>
+                        <button class="btn btn-secondary" onclick="exportarTriagemExcel()" style="background: #4CAF50;">📊 Exportar Excel</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📈 Triagens Realizadas</div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Hoje</div>
+                            <div class="stat-value">8</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Semana</div>
+                            <div class="stat-value">45</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Mês</div>
+                            <div class="stat-value">184</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data Triagem</th>
+                                    <th>Loja</th>
+                                    <th>NF</th>
+                                    <th>Qtd</th>
+                                    <th>Operador</th>
+                                    <th>Op. Mov</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tri_table_body">
+                                <tr>
+                                    <td>2026-05-20</td>
+                                    <td>Cambuí</td>
+                                    <td>--</td>
+                                    <td>375</td>
+                                    <td>VINICIUS BATISTA</td>
+                                    <td>OP-MOV-01</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-05-20</td>
+                                    <td>Termal</td>
+                                    <td>--</td>
+                                    <td>179</td>
+                                    <td>ANTONIO RODRIGUES</td>
+                                    <td>OP-MOV-01</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-05-19</td>
+                                    <td>Santana Pujol</td>
+                                    <td>--</td>
+                                    <td>231</td>
+                                    <td>JOSE BISPO FERREIRA</td>
+                                    <td>OP-MOV-01</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: SAÍDA DE FORNECEDORES -->
+        <div id="saida" class="tab-content">
+            <div class="layout-2col">
+                <div class="card">
+                    <div class="card-title">📤 Nova Saída</div>
+
+                    <div class="form-group">
+                        <label>Data *</label>
+                        <input type="date" id="sai_data" value="2026-05-20">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nº Controle *</label>
+                        <input type="text" id="sai_controle" placeholder="Ex: VP2024-9KGD14" maxlength="30">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Fornecedor * (Editável)</label>
+                        <input type="text" id="sai_fornecedor" placeholder="Digite o nome do fornecedor">
+                    </div>
+
+                    <div style="border-top: 2px solid var(--border); padding-top: calc(var(--grid) * 1.5); margin-bottom: calc(var(--grid) * 1.5);">
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: var(--grid); text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary);">
+                            ➕ Adicionar Material
+                        </div>
+
+                        <div class="form-group">
+                            <label>Material</label>
+                            <select id="sai_material">
+                                <option value="">-- Selecione --</option>
+                                <option value="stretch">STRETCH</option>
+                                <option value="palete_pbr">PALETE PBR</option>
+                                <option value="palete_chep">PALETE CHEP</option>
+                                <option value="palete_desc">PALETE DESC.</option>
+                                <option value="gaiola">GAIOLA MADEIRA</option>
+                                <option value="carrinho">CARRINHO DE FLOR</option>
+                                <option value="caixa_g">CAIXA PLASTICA MODELO G</option>
+                                <option value="caixa_m">CAIXA PLASTICA MODELO M</option>
+                                <option value="caixa_p">CAIXA PLASTICA MODELO P</option>
+                                <option value="caradori">CARADORI</option>
+                                <option value="cx_fornecedor">CX DE FORNECEDOR</option>
+                                <option value="cestos">CESTOS</option>
+                                <option value="carrinho_bimbo">CARRINHO BIMBO</option>
+                                <option value="euro">EURO</option>
+                                <option value="euro_chep">EURO CHEP</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Qtd Entrada</label>
+                                <input type="number" id="sai_entrada" placeholder="0" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Qtd Saída</label>
+                                <input type="number" id="sai_saida" placeholder="0" min="0">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="width: 100%;" onclick="adicionarMaterial()">➕ Adicionar Material</button>
+                    </div>
+
+                    <div style="margin-bottom: calc(var(--grid) * 1.5);">
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: var(--grid); text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary);">
+                            Materiais Lançados
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Material</th>
+                                        <th>Entrada</th>
+                                        <th>Saída</th>
+                                        <th>Saldo</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sai_materiais_body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>Operador *</label>
+                            <select id="sai_operador">
+                                <option value="">-- Selecione --</option>
+                                <option value="op_01">WILLIAM MEDINA</option>
+                                <option value="op_02">GILDEVALDO ARAUJO</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Conferente *</label>
+                            <select id="sai_conferente">
+                                <option value="">-- Selecione --</option>
+                                <option value="conf_01">CONFERENTE 1</option>
+                                <option value="conf_02">CONFERENTE 2</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Op. Movimentação *</label>
+                            <select id="sai_movimentacao">
+                                <option value="">-- Selecione --</option>
+                                <option value="mov_01">MOV 1</option>
+                                <option value="mov_02">MOV 2</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="sai_obs" placeholder="Observações..."></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="salvarSaidaCompleta()">💾 Salvar Saída Completa</button>
+                        <button class="btn btn-secondary" onclick="limparFormSaida()">🔄 Limpar</button>
+                        <button class="btn btn-secondary" onclick="exportarSaidaExcel()" style="background: #4CAF50;">📊 Exportar Excel</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📦 Saídas Recentes</div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Hoje</div>
+                            <div class="stat-value">12</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Saldo Pos</div>
+                            <div class="stat-value" style="color: #4CAF50;">5</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Saldo Neg</div>
+                            <div class="stat-value" style="color: #f44336;">2</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Controle</th>
+                                    <th>Fornecedor</th>
+                                    <th>Material</th>
+                                    <th>Entrada</th>
+                                    <th>Saída</th>
+                                    <th>Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sai_table_body">
+                                <tr>
+                                    <td>2026-02-16</td>
+                                    <td>VP2024-9KGD14</td>
+                                    <td>YAKULT S A</td>
+                                    <td>PALETE PBR</td>
+                                    <td>6</td>
+                                    <td>6</td>
+                                    <td>0</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-12-02</td>
+                                    <td>VP2025-LF370</td>
+                                    <td>124 - OBA BAHIA</td>
+                                    <td>PALETE PBR</td>
+                                    <td>--</td>
+                                    <td>56</td>
+                                    <td class="divergencia-negativa">56</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-12-02</td>
+                                    <td>1578402</td>
+                                    <td>124 - OBA BAHIA</td>
+                                    <td>CAIXA P</td>
+                                    <td>--</td>
+                                    <td>2400</td>
+                                    <td class="divergencia-negativa">2400</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div style="margin-bottom: 8px;">Sistema de Logística Reversa v1.0 | Desenvolvido para operações ágeis e precisas</div>
+            <div style="color: #666;">© 2026 | Sumaré / SP</div>
+        </footer>
+    </div>
+
+    <script>
+        // ===== CONFIGURAÇÃO FIREBASE =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9qVsBjf_v59TN8Ayvarts5Q7LXxzlVrQ",
+            authDomain: "paletcd.firebaseapp.com",
+            databaseURL: "https://paletcd-default-rtdb.firebaseio.com",
+            projectId: "paletcd",
+            storageBucket: "paletcd.appspot.storage.app",
+            messagingSenderId: "431517046970",
+            appId: "1:431517046970:web:e03e0ff01e1b898275ca83"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // ===== DADOS IMPORTADOS DO EXCEL =====
+        const LOJAS = [{"digito": "1", "nome": "CAROLINA", "cnpj": "1", "endereco": "049720920002-03"}, {"digito": "2", "nome": "PONTE PRETA", "cnpj": "6", "endereco": "049720920003-94"}, {"digito": "3", "nome": "BONFIM", "cnpj": "7", "endereco": "049720920005-56"}, {"digito": "5", "nome": "AMOREIRAS", "cnpj": "9", "endereco": "049720920006-37"}, {"digito": "6", "nome": "AMERICANA", "cnpj": "10", "endereco": "049720920015-28"}, {"digito": "9", "nome": "TATUAPÉ", "cnpj": "13", "endereco": "049720920011-02"}, {"digito": "10", "nome": "SOROCABA 1", "cnpj": "2", "endereco": "049720920020-95"}, {"digito": "11", "nome": "BUTANTA", "cnpj": "14", "endereco": "049720920010-13"}, {"digito": "12", "nome": "IBITIRAMA", "cnpj": "15", "endereco": "049720920012-85"}, {"digito": "13", "nome": "MOEMA", "cnpj": "16", "endereco": "049720920016-09"}, {"digito": "30", "nome": "PIRACICABA", "cnpj": "76411", "endereco": "049720920035-71"}];
+
+        const COLABORADORES = [{"matricula": "01790206", "nome": "ALBERTINO DOS SANTOS PRETO", "cargo": "OPERADOR DE LOGÍSTICA II", "turno": "LOG - Reversa Equipe"}, {"matricula": "02201073", "nome": "ANTONIO JOSE SILVA DE OLIVEIRA", "cargo": "AUXILIAR DE HIGIENIZAÇÃO II", "turno": "LOG Reversa Equipe T2"}, {"matricula": "02201061", "nome": "CESAR VINICIOS THOMAZ ALVES DOS SANTOS", "cargo": "CONFERENTE I", "turno": "LOG - Reversa Equipe"}, {"matricula": "02201704", "nome": "DIEGO DE MELO CARDOSO", "cargo": "OPERADOR DE CARGA E DESCARGA", "turno": "LOG Reversa Equipe T2"}, {"matricula": "02200735", "nome": "EDILSON REZENDE DE OLIVEIRA", "cargo": "AUXILIAR DE LOGÍSTICA II", "turno": "LOG - Reversa Equipe"}];
+
+        const PRODUTOS = [{"codigo": "CARADORI", "descricao": "164059"}, {"codigo": "CAIXA PLASTICA MODELO P", "descricao": "213662"}, {"codigo": "CAIXA PLASTICA MODELO G", "descricao": "213659"}, {"codigo": "CAIXA PLASTICA MODELO M", "descricao": "215566"}, {"codigo": "CX FORNECEDOR", "descricao": "CXF"}, {"codigo": "PALETE PBR", "descricao": "184345"}, {"codigo": "PALETE DESC.", "descricao": "PD"}, {"codigo": "GAIOLA", "descricao": "GAIOLA"}, {"codigo": "PALETE EURO", "descricao": ""}, {"codigo": "PALETE EURO CHEP", "descricao": ""}, {"codigo": "CARRINHO DE FLOR", "descricao": "CF"}, {"codigo": "STRETCH", "descricao": "149345"}];
+
+        // Função para popular selects
+        function popularSelects() {
+            // Popular Lojas
+            const lojas_selects = ['ret_loja'];
+            lojas_selects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    LOJAS.forEach(loja => {
+                        const option = document.createElement('option');
+                        option.value = loja.digito;
+                        option.textContent = loja.nome;
+                        select.appendChild(option);
+                    });
+                }
+            });
+
+            // Popular Colaboradores (Operadores e Conferentes)
+            const operador_selects = ['ret_operador', 'tri_operador', 'sai_operador'];
+            const conferente_selects = ['ret_conferente', 'sai_conferente'];
+            
+            operador_selects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    COLABORADORES.forEach(colab => {
+                        const option = document.createElement('option');
+                        option.value = colab.matricula;
+                        option.textContent = colab.nome;
+                        select.appendChild(option);
+                    });
+                }
+            });
+
+            conferente_selects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    COLABORADORES.filter(c => c.cargo.includes('CONFERENTE')).forEach(colab => {
+                        const option = document.createElement('option');
+                        option.value = colab.matricula;
+                        option.textContent = colab.nome;
+                        select.appendChild(option);
+                    });
+                }
+            });
+        }
+
+        // Chamar função ao carregar página
+        document.addEventListener('DOMContentLoaded', function() {
+            popularSelects();
+        });
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function calcularDivergencia(index) {
+            const qtd_fis = parseFloat(document.getElementById('ret_qtd_fis_' + index).value) || 0;
+            const qtd_nf = parseFloat(document.getElementById('ret_qtd_nf_' + index).value) || 0;
+            const divergencia = qtd_nf - qtd_fis;
+            document.getElementById('ret_div_' + index).textContent = divergencia;
+        }
+
+        // RETORNO
+        function limparFormRetorno() {
+            document.getElementById('ret_data').value = '2026-05-20';
+            document.getElementById('ret_loja').value = '';
+            document.getElementById('ret_nf').value = '';
+            document.getElementById('ret_operador').value = '';
+            document.getElementById('ret_conferente').value = '';
+            document.getElementById('ret_obs').value = '';
+        }
+
+        function salvarRetorno() {
+            const loja = document.getElementById('ret_loja').value;
+            const nf = document.getElementById('ret_nf').value;
+            const operador = document.getElementById('ret_operador').value;
+            
+            if (!loja || !nf || !operador) {
+                alert('Preencha os campos obrigatórios!');
+                return;
+            }
+
+            // Dados para Firebase
+            const dados = {
+                loja: loja,
+                nf: nf,
+                operador: operador,
+                conferente: document.getElementById('ret_conferente').value,
+                obs: document.getElementById('ret_obs').value
+            };
+
+            // Salvar no Firebase
+            salvarRetornoFirebase(dados);
+            
+            alert('✅ Retorno salvo com sucesso!\nNF: ' + nf + ' | Loja: ' + loja);
+            limparFormRetorno();
+        }
+
+        // TRIAGEM
+        function autofillTriagem() {
+            const retorno = document.getElementById('tri_retorno').value;
+            if (retorno === 'ret_001') {
+                document.getElementById('tri_data_rec').value = '2026-05-20';
+                document.getElementById('tri_loja').value = 'Piracicaba';
+                document.getElementById('tri_nf').value = '20234';
+                document.getElementById('tri_qtd').value = '99';
+            } else if (retorno === 'ret_002') {
+                document.getElementById('tri_data_rec').value = '2026-05-18';
+                document.getElementById('tri_loja').value = 'Carolina';
+                document.getElementById('tri_nf').value = '13003';
+                document.getElementById('tri_qtd').value = '50';
+            } else if (retorno === 'ret_003') {
+                document.getElementById('tri_data_rec').value = '2026-05-17';
+                document.getElementById('tri_loja').value = 'Bonfim';
+                document.getElementById('tri_nf').value = '15678';
+                document.getElementById('tri_qtd').value = '30';
+            }
+        }
+
+        function limparFormTriagem() {
+            document.getElementById('tri_retorno').value = '';
+            document.getElementById('tri_data_rec').value = '';
+            document.getElementById('tri_data_tri').value = '2026-05-20';
+            document.getElementById('tri_loja').value = '';
+            document.getElementById('tri_nf').value = '';
+            document.getElementById('tri_qtd').value = '';
+            document.getElementById('tri_operador').value = '';
+            document.getElementById('tri_movimentacao').value = '';
+            document.getElementById('tri_obs').value = '';
+        }
+
+        function salvarTriagem() {
+            const retorno = document.getElementById('tri_retorno').value;
+            const operador = document.getElementById('tri_operador').value;
+            
+            if (!retorno || !operador) {
+                alert('Preencha os campos obrigatórios!');
+                return;
+            }
+            
+            alert('✅ Triagem registrada com sucesso!');
+            limparFormTriagem();
+        }
+
+        // SAÍDA: Adicionar Material Dinâmico
+        function adicionarMaterial() {
+            const material = document.getElementById('sai_material').value;
+            const entrada = parseFloat(document.getElementById('sai_entrada').value) || 0;
+            const saida = parseFloat(document.getElementById('sai_saida').value) || 0;
+
+            if (!material) {
+                alert('Selecione um material!');
+                return;
+            }
+
+            if (entrada === 0 && saida === 0) {
+                alert('Preencha Qtd Entrada OU Qtd Saída!');
+                return;
+            }
+
+            const saldo = entrada - saida;
+            const materialLabel = document.getElementById('sai_material').options[document.getElementById('sai_material').selectedIndex].text;
+
+            materiaisSaida.push({
+                material: material,
+                materialLabel: materialLabel,
+                entrada: entrada,
+                saida: saida,
+                saldo: saldo,
+                id: Date.now()
+            });
+
+            renderizarMateriais();
+            document.getElementById('sai_material').value = '';
+            document.getElementById('sai_entrada').value = '';
+            document.getElementById('sai_saida').value = '';
+        }
+
+        function renderizarMateriais() {
+            const tbody = document.getElementById('sai_materiais_body');
+            tbody.innerHTML = '';
+
+            materiaisSaida.forEach(m => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${m.materialLabel}</td>
+                    <td>${m.entrada || '--'}</td>
+                    <td>${m.saida || '--'}</td>
+                    <td>${m.saldo}</td>
+                    <td><button class="btn btn-danger btn-small" onclick="removerMaterial(${m.id})">✕ Remover</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function removerMaterial(id) {
+            materiaisSaida = materiaisSaida.filter(m => m.id !== id);
+            renderizarMateriais();
+        }
+
+        function salvarSaidaCompleta() {
+            const controle = document.getElementById('sai_controle').value;
+            const fornecedor = document.getElementById('sai_fornecedor').value;
+            const operador = document.getElementById('sai_operador').value;
+
+            if (!controle || !fornecedor || !operador) {
+                alert('Preencha: Controle, Fornecedor e Operador!');
+                return;
+            }
+
+            if (materiaisSaida.length === 0) {
+                alert('Adicione pelo menos um material!');
+                return;
+            }
+
+            alert('✅ Saída completa registrada com sucesso!\nControle: ' + controle + '\nMateriais: ' + materiaisSaida.length);
+            limparFormSaida();
+        }
+
+        function limparFormSaida() {
+            document.getElementById('sai_data').value = '2026-05-20';
+            document.getElementById('sai_controle').value = '';
+            document.getElementById('sai_fornecedor').value = '';
+            document.getElementById('sai_material').value = '';
+            document.getElementById('sai_entrada').value = '';
+            document.getElementById('sai_saida').value = '';
+            document.getElementById('sai_operador').value = '';
+            document.getElementById('sai_conferente').value = '';
+            document.getElementById('sai_movimentacao').value = '';
+            document.getElementById('sai_obs').value = '';
+            materiaisSaida = [];
+            renderizarMateriais();
+        }
+
+        // ===== FUNÇÕES FIREBASE =====
+        function salvarRetornoFirebase(dados) {
+            const id = Date.now();
+            db.ref('reversa/retornos/' + id).set({
+                ...dados,
+                timestamp: new Date().toISOString(),
+                data_criacao: new Date().getTime()
+            }).then(() => {
+                console.log('✅ Retorno salvo no Firebase');
+            }).catch(err => {
+                console.error('❌ Erro ao salvar:', err);
+                alert('Erro ao salvar no Firebase. Dados locais mantidos.');
+            });
+        }
+
+        function salvarTriagemFirebase(dados) {
+            const id = Date.now();
+            db.ref('reversa/triagens/' + id).set({
+                ...dados,
+                timestamp: new Date().toISOString(),
+                data_criacao: new Date().getTime()
+            }).catch(err => {
+                console.error('❌ Erro ao salvar:', err);
+            });
+        }
+
+        function salvarSaidaFirebase(dados) {
+            const id = Date.now();
+            db.ref('reversa/saidas/' + id).set({
+                ...dados,
+                timestamp: new Date().toISOString(),
+                data_criacao: new Date().getTime()
+            }).catch(err => {
+                console.error('❌ Erro ao salvar:', err);
+            });
+        }
+
+        // ===== FUNÇÕES EXPORT EXCEL =====
+        function obterDados30Dias(colecao) {
+            return new Promise((resolve) => {
+                const agora = Date.now();
+                const trinta_dias_atras = agora - (30 * 24 * 60 * 60 * 1000);
+
+                db.ref('reversa/' + colecao).orderByChild('data_criacao')
+                    .startAt(trinta_dias_atras)
+                    .endAt(agora)
+                    .once('value', snapshot => {
+                        const dados = [];
+                        snapshot.forEach(child => {
+                            dados.push(child.val());
+                        });
+                        resolve(dados);
+                    });
+            });
+        }
+
+        async function exportarRetornoExcel() {
+            alert('⏳ Preparando dados... (aguarde)');
+            const dados = await obterDados30Dias('retornos');
+            
+            if (dados.length === 0) {
+                alert('Nenhum dado nos últimos 30 dias para exportar.');
+                return;
+            }
+
+            const planilha = dados.map(d => ({
+                'Data': new Date(d.timestamp).toLocaleDateString('pt-BR'),
+                'Loja': d.loja || '',
+                'Nota Fiscal': d.nf || '',
+                'Material': d.material || '',
+                'Qtd NF': d.qtd_nf || 0,
+                'Qtd Física': d.qtd_fis || 0,
+                'Divergência': (d.qtd_nf || 0) - (d.qtd_fis || 0),
+                'Operador': d.operador || '',
+                'Conferente': d.conferente || '',
+                'Observações': d.obs || ''
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(planilha);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Retornos');
+            XLSX.writeFile(wb, 'Reversa_Retornos_30dias.xlsx');
+            alert('✅ Arquivo exportado com sucesso!');
+        }
+
+        async function exportarTriagemExcel() {
+            alert('⏳ Preparando dados... (aguarde)');
+            const dados = await obterDados30Dias('triagens');
+            
+            if (dados.length === 0) {
+                alert('Nenhum dado nos últimos 30 dias para exportar.');
+                return;
+            }
+
+            const planilha = dados.map(d => ({
+                'Data Triagem': new Date(d.timestamp).toLocaleDateString('pt-BR'),
+                'Loja': d.loja || '',
+                'Nota Fiscal': d.nf || '',
+                'Quantidade': d.qtd || 0,
+                'Operador': d.operador || '',
+                'Op. Movimentação': d.movimentacao || '',
+                'Observações': d.obs || ''
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(planilha);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Triagens');
+            XLSX.writeFile(wb, 'Reversa_Triagens_30dias.xlsx');
+            alert('✅ Arquivo exportado com sucesso!');
+        }
+
+        async function exportarSaidaExcel() {
+            alert('⏳ Preparando dados... (aguarde)');
+            const dados = await obterDados30Dias('saidas');
+            
+            if (dados.length === 0) {
+                alert('Nenhum dado nos últimos 30 dias para exportar.');
+                return;
+            }
+
+            const planilha = dados.map(d => ({
+                'Data': new Date(d.timestamp).toLocaleDateString('pt-BR'),
+                'Controle': d.controle || '',
+                'Fornecedor': d.fornecedor || '',
+                'Material': d.material || '',
+                'Entrada': d.entrada || 0,
+                'Saída': d.saida || 0,
+                'Saldo': (d.entrada || 0) - (d.saida || 0),
+                'Operador': d.operador || '',
+                'Conferente': d.conferente || '',
+                'Op. Movimentação': d.movimentacao || '',
+                'Observações': d.obs || ''
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(planilha);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Saídas');
+            XLSX.writeFile(wb, 'Reversa_Saidas_30dias.xlsx');
+            alert('✅ Arquivo exportado com sucesso!');
+        }
+    </script>
+</body>
+</html>
