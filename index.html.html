@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Logística Reversa</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -409,160 +406,15 @@
             font-size: 11px;
             color: var(--text-secondary);
         }
-
-        /* LOGIN SCREEN */
-        .login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--secondary) 0%, var(--surface-alt) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .login-container {
-            background: var(--surface);
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        .login-logo {
-            font-size: 32px;
-            text-align: center;
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
-
-        .login-title {
-            text-align: center;
-            font-size: 18px;
-            color: var(--text-primary);
-            margin-bottom: 30px;
-            font-weight: bold;
-        }
-
-        .login-group {
-            margin-bottom: 20px;
-        }
-
-        .login-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            font-weight: bold;
-        }
-
-        .login-group input,
-        .login-group select {
-            width: 100%;
-            padding: 12px;
-            background: var(--surface-alt);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            border-radius: 4px;
-            font-family: 'Courier Prime', monospace;
-            font-size: 14px;
-        }
-
-        .login-group input:focus,
-        .login-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 12px rgba(255, 122, 0, 0.2);
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: var(--bg);
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .login-btn:hover {
-            background: var(--primary-dark);
-            box-shadow: 0 0 16px rgba(255, 122, 0, 0.3);
-        }
-
-        .login-error {
-            background: rgba(244, 67, 54, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            padding: 12px;
-            border-radius: 4px;
-            margin-top: 15px;
-            text-align: center;
-            font-size: 12px;
-        }
-
-        .login-footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .app-screen {
-            display: none;
-        }
     </style>
 </head>
 <body>
-    <!-- TELA DE LOGIN -->
-    <div id="loginScreen" class="login-screen">
-        <div class="login-container">
-            <div class="login-logo">🔐 REVERSA LOG</div>
-            <div class="login-title">Sistema de Logística Reversa</div>
-            
-            <form onsubmit="fazerLogin(event)">
-                <div class="login-group">
-                    <label>Perfil *</label>
-                    <select id="perfil" required>
-                        <option value="">-- Selecione --</option>
-                        <option value="adm">Administrador</option>
-                        <option value="reversa">Logística Reversa</option>
-                    </select>
-                </div>
-
-                <div class="login-group">
-                    <label>Senha *</label>
-                    <input type="password" id="senha" placeholder="Digite a senha" required>
-                </div>
-
-                <button type="submit" class="login-btn">Entrar</button>
-            </form>
-
-            <div id="loginError" class="login-error" style="display: none;"></div>
-            <div class="login-footer">Maggio 2026 © Marcelo Nepo</div>
-        </div>
-    </div>
-
-    <!-- APP PRINCIPAL (escondido até fazer login) -->
-    <div id="appScreen" class="app-screen" style="display: none;">
     <div class="container">
         <header>
             <div class="logo">⚙ REVERSA</div>
             <div class="user-info">
-                <div>Usuário: <strong id="usuarioNome">OPERADOR_01</strong></div>
-                <div>Perfil: <strong id="usuarioPerfil">OPERADOR</strong></div>
-                <button onclick="fazerLogout()" style="background: #f44336; padding: 5px 10px; border: none; color: white; cursor: pointer; border-radius: 3px; margin-left: 20px;">Sair</button>
+                <div>Usuário: <strong>OPERADOR_01</strong></div>
+                <div>Perfil: <strong>OPERADOR</strong></div>
             </div>
         </header>
 
@@ -632,7 +484,6 @@
                     <div class="btn-group">
                         <button class="btn btn-primary" onclick="salvarRetorno()">💾 Salvar Retorno</button>
                         <button class="btn btn-secondary" onclick="limparFormRetorno()">🔄 Limpar</button>
-                        <button class="btn btn-secondary" onclick="exportarRetornoExcel()" style="background: #4CAF50;">📊 Exportar Excel</button>
                     </div>
                 </div>
 
@@ -816,7 +667,6 @@
                     <div class="btn-group">
                         <button class="btn btn-primary" onclick="salvarTriagem()">💾 Salvar Triagem</button>
                         <button class="btn btn-secondary" onclick="limparFormTriagem()">🔄 Limpar</button>
-                        <button class="btn btn-secondary" onclick="exportarTriagemExcel()" style="background: #4CAF50;">📊 Exportar Excel</button>
                     </div>
                 </div>
 
@@ -1000,7 +850,6 @@
                     <div class="btn-group">
                         <button class="btn btn-primary" onclick="salvarSaidaCompleta()">💾 Salvar Saída Completa</button>
                         <button class="btn btn-secondary" onclick="limparFormSaida()">🔄 Limpar</button>
-                        <button class="btn btn-secondary" onclick="exportarSaidaExcel()" style="background: #4CAF50;">📊 Exportar Excel</button>
                     </div>
                 </div>
 
@@ -1077,132 +926,10 @@
     </div>
 
     <script>
-        // ===== CREDENCIAIS HARDCODED =====
-        const CREDENCIAIS = {
-            'adm': 'ADM@2024',
-            'reversa': 'REV@2024'
-        };
+        // Array global para armazenar materiais da saída
+        let materiaisSaida = [];
 
-        const NOMES_PERFIL = {
-            'adm': 'Administrador',
-            'reversa': 'Logística Reversa'
-        };
-
-        let usuarioLogado = null;
-
-        // ===== FUNÇÕES DE LOGIN =====
-        function fazerLogin(event) {
-            event.preventDefault();
-            
-            const perfil = document.getElementById('perfil').value;
-            const senha = document.getElementById('senha').value;
-            const errorDiv = document.getElementById('loginError');
-
-            if (!perfil || !senha) {
-                errorDiv.textContent = '⚠️ Preencha todos os campos!';
-                errorDiv.style.display = 'block';
-                return;
-            }
-
-            if (CREDENCIAIS[perfil] && CREDENCIAIS[perfil] === senha) {
-                usuarioLogado = perfil;
-                
-                // Mostrar app, esconder login
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appScreen').style.display = 'block';
-                
-                // Atualizar info do usuário
-                document.getElementById('usuarioNome').textContent = NOMES_PERFIL[perfil];
-                document.getElementById('usuarioPerfil').textContent = NOMES_PERFIL[perfil];
-                
-                errorDiv.style.display = 'none';
-            } else {
-                errorDiv.textContent = '❌ Perfil ou senha incorretos!';
-                errorDiv.style.display = 'block';
-                document.getElementById('senha').value = '';
-            }
-        }
-
-        function fazerLogout() {
-            usuarioLogado = null;
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('appScreen').style.display = 'none';
-            document.getElementById('perfil').value = '';
-            document.getElementById('senha').value = '';
-            document.getElementById('loginError').style.display = 'none';
-        }
-
-        // ===== CONFIGURAÇÃO FIREBASE =====
-        const firebaseConfig = {
-            apiKey: "AIzaSyD9qVsBjf_v59TN8Ayvarts5Q7LXxzlVrQ",
-            authDomain: "paletcd.firebaseapp.com",
-            databaseURL: "https://paletcd-default-rtdb.firebaseio.com",
-            projectId: "paletcd",
-            storageBucket: "paletcd.appspot.storage.app",
-            messagingSenderId: "431517046970",
-            appId: "1:431517046970:web:e03e0ff01e1b898275ca83"
-        };
-
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // ===== DADOS IMPORTADOS DO EXCEL =====
-        const LOJAS = [{"digito": "1", "nome": "CAROLINA", "cnpj": "1", "endereco": "049720920002-03"}, {"digito": "2", "nome": "PONTE PRETA", "cnpj": "6", "endereco": "049720920003-94"}, {"digito": "3", "nome": "BONFIM", "cnpj": "7", "endereco": "049720920005-56"}, {"digito": "5", "nome": "AMOREIRAS", "cnpj": "9", "endereco": "049720920006-37"}, {"digito": "6", "nome": "AMERICANA", "cnpj": "10", "endereco": "049720920015-28"}, {"digito": "9", "nome": "TATUAPÉ", "cnpj": "13", "endereco": "049720920011-02"}, {"digito": "10", "nome": "SOROCABA 1", "cnpj": "2", "endereco": "049720920020-95"}, {"digito": "11", "nome": "BUTANTA", "cnpj": "14", "endereco": "049720920010-13"}, {"digito": "12", "nome": "IBITIRAMA", "cnpj": "15", "endereco": "049720920012-85"}, {"digito": "13", "nome": "MOEMA", "cnpj": "16", "endereco": "049720920016-09"}, {"digito": "30", "nome": "PIRACICABA", "cnpj": "76411", "endereco": "049720920035-71"}];
-
-        const COLABORADORES = [{"matricula": "01790206", "nome": "ALBERTINO DOS SANTOS PRETO", "cargo": "OPERADOR DE LOGÍSTICA II", "turno": "LOG - Reversa Equipe"}, {"matricula": "02201073", "nome": "ANTONIO JOSE SILVA DE OLIVEIRA", "cargo": "AUXILIAR DE HIGIENIZAÇÃO II", "turno": "LOG Reversa Equipe T2"}, {"matricula": "02201061", "nome": "CESAR VINICIOS THOMAZ ALVES DOS SANTOS", "cargo": "CONFERENTE I", "turno": "LOG - Reversa Equipe"}, {"matricula": "02201704", "nome": "DIEGO DE MELO CARDOSO", "cargo": "OPERADOR DE CARGA E DESCARGA", "turno": "LOG Reversa Equipe T2"}, {"matricula": "02200735", "nome": "EDILSON REZENDE DE OLIVEIRA", "cargo": "AUXILIAR DE LOGÍSTICA II", "turno": "LOG - Reversa Equipe"}];
-
-        const PRODUTOS = [{"codigo": "CARADORI", "descricao": "164059"}, {"codigo": "CAIXA PLASTICA MODELO P", "descricao": "213662"}, {"codigo": "CAIXA PLASTICA MODELO G", "descricao": "213659"}, {"codigo": "CAIXA PLASTICA MODELO M", "descricao": "215566"}, {"codigo": "CX FORNECEDOR", "descricao": "CXF"}, {"codigo": "PALETE PBR", "descricao": "184345"}, {"codigo": "PALETE DESC.", "descricao": "PD"}, {"codigo": "GAIOLA", "descricao": "GAIOLA"}, {"codigo": "PALETE EURO", "descricao": ""}, {"codigo": "PALETE EURO CHEP", "descricao": ""}, {"codigo": "CARRINHO DE FLOR", "descricao": "CF"}, {"codigo": "STRETCH", "descricao": "149345"}];
-
-        // Função para popular selects
-        function popularSelects() {
-            // Popular Lojas
-            const lojas_selects = ['ret_loja'];
-            lojas_selects.forEach(id => {
-                const select = document.getElementById(id);
-                if (select) {
-                    LOJAS.forEach(loja => {
-                        const option = document.createElement('option');
-                        option.value = loja.digito;
-                        option.textContent = loja.nome;
-                        select.appendChild(option);
-                    });
-                }
-            });
-
-            // Popular Colaboradores (Operadores e Conferentes)
-            const operador_selects = ['ret_operador', 'tri_operador', 'sai_operador'];
-            const conferente_selects = ['ret_conferente', 'sai_conferente'];
-            
-            operador_selects.forEach(id => {
-                const select = document.getElementById(id);
-                if (select) {
-                    COLABORADORES.forEach(colab => {
-                        const option = document.createElement('option');
-                        option.value = colab.matricula;
-                        option.textContent = colab.nome;
-                        select.appendChild(option);
-                    });
-                }
-            });
-
-            conferente_selects.forEach(id => {
-                const select = document.getElementById(id);
-                if (select) {
-                    COLABORADORES.filter(c => c.cargo.includes('CONFERENTE')).forEach(colab => {
-                        const option = document.createElement('option');
-                        option.value = colab.matricula;
-                        option.textContent = colab.nome;
-                        select.appendChild(option);
-                    });
-                }
-            });
-        }
-
-        // Chamar função ao carregar página
-        document.addEventListener('DOMContentLoaded', function() {
-            popularSelects();
-        });
+        function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -1239,18 +966,6 @@
                 alert('Preencha os campos obrigatórios!');
                 return;
             }
-
-            // Dados para Firebase
-            const dados = {
-                loja: loja,
-                nf: nf,
-                operador: operador,
-                conferente: document.getElementById('ret_conferente').value,
-                obs: document.getElementById('ret_obs').value
-            };
-
-            // Salvar no Firebase
-            salvarRetornoFirebase(dados);
             
             alert('✅ Retorno salvo com sucesso!\nNF: ' + nf + ' | Loja: ' + loja);
             limparFormRetorno();
@@ -1390,147 +1105,6 @@
             document.getElementById('sai_obs').value = '';
             materiaisSaida = [];
             renderizarMateriais();
-        }
-
-        // ===== FUNÇÕES FIREBASE =====
-        function salvarRetornoFirebase(dados) {
-            const id = Date.now();
-            db.ref('reversa/retornos/' + id).set({
-                ...dados,
-                timestamp: new Date().toISOString(),
-                data_criacao: new Date().getTime()
-            }).then(() => {
-                console.log('✅ Retorno salvo no Firebase');
-            }).catch(err => {
-                console.error('❌ Erro ao salvar:', err);
-                alert('Erro ao salvar no Firebase. Dados locais mantidos.');
-            });
-        }
-
-        function salvarTriagemFirebase(dados) {
-            const id = Date.now();
-            db.ref('reversa/triagens/' + id).set({
-                ...dados,
-                timestamp: new Date().toISOString(),
-                data_criacao: new Date().getTime()
-            }).catch(err => {
-                console.error('❌ Erro ao salvar:', err);
-            });
-        }
-
-        function salvarSaidaFirebase(dados) {
-            const id = Date.now();
-            db.ref('reversa/saidas/' + id).set({
-                ...dados,
-                timestamp: new Date().toISOString(),
-                data_criacao: new Date().getTime()
-            }).catch(err => {
-                console.error('❌ Erro ao salvar:', err);
-            });
-        }
-
-        // ===== FUNÇÕES EXPORT EXCEL =====
-        function obterDados30Dias(colecao) {
-            return new Promise((resolve) => {
-                const agora = Date.now();
-                const trinta_dias_atras = agora - (30 * 24 * 60 * 60 * 1000);
-
-                db.ref('reversa/' + colecao).orderByChild('data_criacao')
-                    .startAt(trinta_dias_atras)
-                    .endAt(agora)
-                    .once('value', snapshot => {
-                        const dados = [];
-                        snapshot.forEach(child => {
-                            dados.push(child.val());
-                        });
-                        resolve(dados);
-                    });
-            });
-        }
-
-        async function exportarRetornoExcel() {
-            alert('⏳ Preparando dados... (aguarde)');
-            const dados = await obterDados30Dias('retornos');
-            
-            if (dados.length === 0) {
-                alert('Nenhum dado nos últimos 30 dias para exportar.');
-                return;
-            }
-
-            const planilha = dados.map(d => ({
-                'Data': new Date(d.timestamp).toLocaleDateString('pt-BR'),
-                'Loja': d.loja || '',
-                'Nota Fiscal': d.nf || '',
-                'Material': d.material || '',
-                'Qtd NF': d.qtd_nf || 0,
-                'Qtd Física': d.qtd_fis || 0,
-                'Divergência': (d.qtd_nf || 0) - (d.qtd_fis || 0),
-                'Operador': d.operador || '',
-                'Conferente': d.conferente || '',
-                'Observações': d.obs || ''
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(planilha);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Retornos');
-            XLSX.writeFile(wb, 'Reversa_Retornos_30dias.xlsx');
-            alert('✅ Arquivo exportado com sucesso!');
-        }
-
-        async function exportarTriagemExcel() {
-            alert('⏳ Preparando dados... (aguarde)');
-            const dados = await obterDados30Dias('triagens');
-            
-            if (dados.length === 0) {
-                alert('Nenhum dado nos últimos 30 dias para exportar.');
-                return;
-            }
-
-            const planilha = dados.map(d => ({
-                'Data Triagem': new Date(d.timestamp).toLocaleDateString('pt-BR'),
-                'Loja': d.loja || '',
-                'Nota Fiscal': d.nf || '',
-                'Quantidade': d.qtd || 0,
-                'Operador': d.operador || '',
-                'Op. Movimentação': d.movimentacao || '',
-                'Observações': d.obs || ''
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(planilha);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Triagens');
-            XLSX.writeFile(wb, 'Reversa_Triagens_30dias.xlsx');
-            alert('✅ Arquivo exportado com sucesso!');
-        }
-
-        async function exportarSaidaExcel() {
-            alert('⏳ Preparando dados... (aguarde)');
-            const dados = await obterDados30Dias('saidas');
-            
-            if (dados.length === 0) {
-                alert('Nenhum dado nos últimos 30 dias para exportar.');
-                return;
-            }
-
-            const planilha = dados.map(d => ({
-                'Data': new Date(d.timestamp).toLocaleDateString('pt-BR'),
-                'Controle': d.controle || '',
-                'Fornecedor': d.fornecedor || '',
-                'Material': d.material || '',
-                'Entrada': d.entrada || 0,
-                'Saída': d.saida || 0,
-                'Saldo': (d.entrada || 0) - (d.saida || 0),
-                'Operador': d.operador || '',
-                'Conferente': d.conferente || '',
-                'Op. Movimentação': d.movimentacao || '',
-                'Observações': d.obs || ''
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(planilha);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Saídas');
-            XLSX.writeFile(wb, 'Reversa_Saidas_30dias.xlsx');
-            alert('✅ Arquivo exportado com sucesso!');
         }
     </script>
 </body>
