@@ -406,66 +406,6 @@
             font-size: 11px;
             color: var(--text-secondary);
         }
-
-        /* AUTOCOMPLETE STYLES */
-        .autocomplete-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .autocomplete-input {
-            width: 100%;
-            padding: 8px;
-            background: var(--surface-alt);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            border-radius: 4px;
-            font-family: 'Courier Prime', monospace;
-            font-size: 12px;
-        }
-
-        .autocomplete-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 8px rgba(255, 122, 0, 0.2);
-        }
-
-        .autocomplete-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--surface);
-            border: 1px solid var(--primary);
-            border-top: none;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            border-radius: 0 0 4px 4px;
-        }
-
-        .autocomplete-list.active {
-            display: block;
-        }
-
-        .autocomplete-item {
-            padding: 8px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-            color: var(--text-primary);
-        }
-
-        .autocomplete-item:hover,
-        .autocomplete-item.selected {
-            background: var(--primary);
-            color: var(--bg);
-        }
-
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
     </style>
 </head>
 <body>
@@ -503,101 +443,100 @@
 
                     <div class="form-group">
                         <label>Loja *</label>
-                        <input list="ret_loja_list" id="ret_loja" placeholder="Digite..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                        <input type="text" list="ret_loja_list" id="ret_loja" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
                             <datalist id="ret_loja_list">
-
-<option value="">-- Selecione --</option>
-                            <option value="1">CAROLINA</option>
-                            <option value="2">PONTE PRETA</option>
-                            <option value="3">BONFIM</option>
-                            <option value="5">AMOREIRAS</option>
-                            <option value="6">AMERICANA</option>
-                            <option value="9">TATUAPÉ</option>
-                            <option value="10">SOROCABA 1</option>
-                            <option value="11">BUTANTA</option>
-                            <option value="12">IBITIRAMA</option>
-                            <option value="13">MOEMA</option>
-                            <option value="14">PENHA</option>
-                            <option value="15">SANTANA PUJOL</option>
-                            <option value="17">THE MALL</option>
-                            <option value="19">MORUMBI</option>
-                            <option value="21">CENTRO</option>
-                            <option value="23">CAMBUÍ</option>
-                            <option value="24">SANTANA ATALIBA</option>
-                            <option value="25">SANTANA TOLLE</option>
-                            <option value="26">SOROCABA 2</option>
-                            <option value="29">MOOCA</option>
-                            <option value="30">PIRACICABA</option>
-                            <option value="31">SOUSAS</option>
-                            <option value="32">VILA MARIANA</option>
-                            <option value="33">GALLERIA</option>
-                            <option value="34">ANÁLIA FRANCO</option>
-                            <option value="35">SÃO JOSÉ DOS CAMPOS</option>
-                            <option value="36">ANGELICA</option>
-                            <option value="37">TEODORO SAMPAIO</option>
-                            <option value="38">RIBEIRÃO PRETO</option>
-                            <option value="39">INTERLAGOS</option>
-                            <option value="40">MARKET PLACE</option>
-                            <option value="41">LEOPOLDINA</option>
-                            <option value="42">SANTO ANDRÉ</option>
-                            <option value="43">PERDIZES</option>
-                            <option value="44">306 Nort</option>
-                            <option value="45">Colorad</option>
-                            <option value="46">302 Sud</option>
-                            <option value="47">QI09 LA</option>
-                            <option value="48">212 Sul</option>
-                            <option value="49">Castanh</option>
-                            <option value="50">D Bosco</option>
-                            <option value="51">ARACAURIAS</option>
-                            <option value="52">209 NOR</option>
-                            <option value="53">Flamboy</option>
-                            <option value="54">T63</option>
-                            <option value="55">CAMPO BELO</option>
-                            <option value="135">VILA MARIANA 2</option>
-                            <option value="57">JUNDIAI</option>
-                            <option value="58">VictPires</option>
-                            <option value="59">Asa Sul</option>
-                            <option value="61">ShpIgutDF</option>
-                            <option value="62">Pira Way</option>
-                            <option value="63">SHOP JUNDIAI</option>
-                            <option value="64">ALPHAVILLE BARUERI</option>
-                            <option value="65">RIBEIRÃO PRETO 2</option>
-                            <option value="67">SÃO BERNARDO</option>
-                            <option value="69">ALPHAVILLE</option>
-                            <option value="71">APUCARANA</option>
-                            <option value="72">SHOPPING TATUAPÉ</option>
-                            <option value="73">CAMBUI 2</option>
-                            <option value="74">ITAIM BIBI</option>
-                            <option value="75">NOVA CAMPINAS</option>
-                            <option value="76">SANTOS</option>
-                            <option value="79">SOROCABA 3</option>
-                            <option value="80">ITU</option>
-                            <option value="81">PAMPLONA</option>
-                            <option value="86">SÃO JOSÉ DO RIO PRETO</option>
-                            <option value="87">ITATIBA</option>
-                            <option value="88">GRANJA VIANA</option>
-                            <option value="97">CD 97</option>
-                            <option value="100">CD 100</option>
-                            <option value="104">INDAIATUBA</option>
-                            <option value="107">AMERICANA 2</option>
-                            <option value="108">LIMEIRA</option>
-                            <option value="121">ARBORAIS</option>
-                            <option value="122">BAURU</option>
-                            <option value="123">NOVA CANTAREIRA</option>
-                            <option value="124">CD BAHIA</option>
-                            <option value="125">CD SÃO MIGUEL</option>
-                            <option value="127">FRANCA</option>
-                            <option value="130">SÃO MATEUS</option>
-                            <option value="131">203 ASA SUL</option>
-                            <option value="132">406 ASA SUL</option>
-                            <option value="133">HOLAMBRA</option>
-                            <option value="134">DAMHA</option>
-                            <option value="94">CAIXARIA</option>
-                            <option value="56">VILA MASCOTE</option>
-                            <option value="92">RESTAURANTE</option>
-                            <option value="136">SÃO CARLOS</option>
-                            <option value="139">ITAIM BIBI 2</option>
-                        </datalist>
+                            <option value="">-- Selecione --</option>
+                            <option value="CAROLINA" data-id="1">CAROLINA</option>
+                            <option value="PONTE PRETA" data-id="2">PONTE PRETA</option>
+                            <option value="BONFIM" data-id="3">BONFIM</option>
+                            <option value="AMOREIRAS" data-id="5">AMOREIRAS</option>
+                            <option value="AMERICANA" data-id="6">AMERICANA</option>
+                            <option value="TATUAPÉ" data-id="9">TATUAPÉ</option>
+                            <option value="SOROCABA 1" data-id="10">SOROCABA 1</option>
+                            <option value="BUTANTA" data-id="11">BUTANTA</option>
+                            <option value="IBITIRAMA" data-id="12">IBITIRAMA</option>
+                            <option value="MOEMA" data-id="13">MOEMA</option>
+                            <option value="PENHA" data-id="14">PENHA</option>
+                            <option value="SANTANA PUJOL" data-id="15">SANTANA PUJOL</option>
+                            <option value="THE MALL" data-id="17">THE MALL</option>
+                            <option value="MORUMBI" data-id="19">MORUMBI</option>
+                            <option value="CENTRO" data-id="21">CENTRO</option>
+                            <option value="CAMBUÍ" data-id="23">CAMBUÍ</option>
+                            <option value="SANTANA ATALIBA" data-id="24">SANTANA ATALIBA</option>
+                            <option value="SANTANA TOLLE" data-id="25">SANTANA TOLLE</option>
+                            <option value="SOROCABA 2" data-id="26">SOROCABA 2</option>
+                            <option value="MOOCA" data-id="29">MOOCA</option>
+                            <option value="PIRACICABA" data-id="30">PIRACICABA</option>
+                            <option value="SOUSAS" data-id="31">SOUSAS</option>
+                            <option value="VILA MARIANA" data-id="32">VILA MARIANA</option>
+                            <option value="GALLERIA" data-id="33">GALLERIA</option>
+                            <option value="ANÁLIA FRANCO" data-id="34">ANÁLIA FRANCO</option>
+                            <option value="SÃO JOSÉ DOS CAMPOS" data-id="35">SÃO JOSÉ DOS CAMPOS</option>
+                            <option value="ANGELICA" data-id="36">ANGELICA</option>
+                            <option value="TEODORO SAMPAIO" data-id="37">TEODORO SAMPAIO</option>
+                            <option value="RIBEIRÃO PRETO" data-id="38">RIBEIRÃO PRETO</option>
+                            <option value="INTERLAGOS" data-id="39">INTERLAGOS</option>
+                            <option value="MARKET PLACE" data-id="40">MARKET PLACE</option>
+                            <option value="LEOPOLDINA" data-id="41">LEOPOLDINA</option>
+                            <option value="SANTO ANDRÉ" data-id="42">SANTO ANDRÉ</option>
+                            <option value="PERDIZES" data-id="43">PERDIZES</option>
+                            <option value="306 Nort" data-id="44">306 Nort</option>
+                            <option value="Colorad" data-id="45">Colorad</option>
+                            <option value="302 Sud" data-id="46">302 Sud</option>
+                            <option value="QI09 LA" data-id="47">QI09 LA</option>
+                            <option value="212 Sul" data-id="48">212 Sul</option>
+                            <option value="Castanh" data-id="49">Castanh</option>
+                            <option value="D Bosco" data-id="50">D Bosco</option>
+                            <option value="ARACAURIAS" data-id="51">ARACAURIAS</option>
+                            <option value="209 NOR" data-id="52">209 NOR</option>
+                            <option value="Flamboy" data-id="53">Flamboy</option>
+                            <option value="T63" data-id="54">T63</option>
+                            <option value="CAMPO BELO" data-id="55">CAMPO BELO</option>
+                            <option value="VILA MARIANA 2" data-id="135">VILA MARIANA 2</option>
+                            <option value="JUNDIAI" data-id="57">JUNDIAI</option>
+                            <option value="VictPires" data-id="58">VictPires</option>
+                            <option value="Asa Sul" data-id="59">Asa Sul</option>
+                            <option value="ShpIgutDF" data-id="61">ShpIgutDF</option>
+                            <option value="Pira Way" data-id="62">Pira Way</option>
+                            <option value="SHOP JUNDIAI" data-id="63">SHOP JUNDIAI</option>
+                            <option value="ALPHAVILLE BARUERI" data-id="64">ALPHAVILLE BARUERI</option>
+                            <option value="RIBEIRÃO PRETO 2" data-id="65">RIBEIRÃO PRETO 2</option>
+                            <option value="SÃO BERNARDO" data-id="67">SÃO BERNARDO</option>
+                            <option value="ALPHAVILLE" data-id="69">ALPHAVILLE</option>
+                            <option value="APUCARANA" data-id="71">APUCARANA</option>
+                            <option value="SHOPPING TATUAPÉ" data-id="72">SHOPPING TATUAPÉ</option>
+                            <option value="CAMBUI 2" data-id="73">CAMBUI 2</option>
+                            <option value="ITAIM BIBI" data-id="74">ITAIM BIBI</option>
+                            <option value="NOVA CAMPINAS" data-id="75">NOVA CAMPINAS</option>
+                            <option value="SANTOS" data-id="76">SANTOS</option>
+                            <option value="SOROCABA 3" data-id="79">SOROCABA 3</option>
+                            <option value="ITU" data-id="80">ITU</option>
+                            <option value="PAMPLONA" data-id="81">PAMPLONA</option>
+                            <option value="SÃO JOSÉ DO RIO PRETO" data-id="86">SÃO JOSÉ DO RIO PRETO</option>
+                            <option value="ITATIBA" data-id="87">ITATIBA</option>
+                            <option value="GRANJA VIANA" data-id="88">GRANJA VIANA</option>
+                            <option value="CD 97" data-id="97">CD 97</option>
+                            <option value="CD 100" data-id="100">CD 100</option>
+                            <option value="INDAIATUBA" data-id="104">INDAIATUBA</option>
+                            <option value="AMERICANA 2" data-id="107">AMERICANA 2</option>
+                            <option value="LIMEIRA" data-id="108">LIMEIRA</option>
+                            <option value="ARBORAIS" data-id="121">ARBORAIS</option>
+                            <option value="BAURU" data-id="122">BAURU</option>
+                            <option value="NOVA CANTAREIRA" data-id="123">NOVA CANTAREIRA</option>
+                            <option value="CD BAHIA" data-id="124">CD BAHIA</option>
+                            <option value="CD SÃO MIGUEL" data-id="125">CD SÃO MIGUEL</option>
+                            <option value="FRANCA" data-id="127">FRANCA</option>
+                            <option value="SÃO MATEUS" data-id="130">SÃO MATEUS</option>
+                            <option value="203 ASA SUL" data-id="131">203 ASA SUL</option>
+                            <option value="406 ASA SUL" data-id="132">406 ASA SUL</option>
+                            <option value="HOLAMBRA" data-id="133">HOLAMBRA</option>
+                            <option value="DAMHA" data-id="134">DAMHA</option>
+                            <option value="CAIXARIA" data-id="94">CAIXARIA</option>
+                            <option value="VILA MASCOTE" data-id="56">VILA MASCOTE</option>
+                            <option value="RESTAURANTE" data-id="92">RESTAURANTE</option>
+                            <option value="SÃO CARLOS" data-id="136">SÃO CARLOS</option>
+                            <option value="ITAIM BIBI 2" data-id="139">ITAIM BIBI 2</option>
+                            </datalist>
                     </div>
 
                     <div class="form-group">
@@ -607,104 +546,102 @@
 
                     <div class="form-group">
                         <label>Operador *</label>
-                        <input list="ret_operador_list" id="ret_operador" placeholder="Digite..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                        <input type="text" list="ret_operador_list" id="ret_operador" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
                             <datalist id="ret_operador_list">
-
-<option value="">-- Selecione --</option>
-                            <option value="01790206">ALBERTINO DOS SANTOS PRETO</option>
-                            <option value="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
-                            <option value="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
-                            <option value="02201736">DANIEL RODRIGUES DA SILVA</option>
-                            <option value="02201704">DIEGO DE MELO CARDOSO</option>
-                            <option value="02200735">EDILSON REZENDE DE OLIVEIRA</option>
-                            <option value="02200728">ELIAS POLIDORIO DOS SANTOS</option>
-                            <option value="02200624">GABRIEL DOS SANTOS SILVA</option>
-                            <option value="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
-                            <option value="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
-                            <option value="02201798">GUSTAVO FRANQUILINO VICENTE</option>
-                            <option value="03190595">HOBEDE PINHEIRO SOARES</option>
-                            <option value="02201826">JERONIMO CASSIMIRO CORREIA</option>
-                            <option value="02201661">JOAO VICTOR DE SOUZA MELO</option>
-                            <option value="02200134">JOAQUIM DE SOUZA PIRES</option>
-                            <option value="02200835">JOSE BARBOSA AIRES FILHO</option>
-                            <option value="01790198">JOSE BISPO FERREIRA</option>
-                            <option value="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
-                            <option value="02200742">KAUE JUVENCIO DA COSTA</option>
-                            <option value="03101049">KENNEDY FERNANDES DOS SANTOS</option>
-                            <option value="03102496">LAZARO DO NASCIMENTO SILVA</option>
-                            <option value="03102453">LENIN BENTO DA SILVA</option>
-                            <option value="02201030">LUIS HENRIQUE RIBEIRO</option>
-                            <option value="02201609">LUIZ EDUARDO CAETANO LOPES</option>
-                            <option value="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
-                            <option value="02200717">OSMAR ROMAO CARDOSO</option>
-                            <option value="03101034">PATRIK STEFEN SANTANA</option>
-                            <option value="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
-                            <option value="02201384">ROBERT FIRMINO DE LIMA</option>
-                            <option value="02201829">RUAN PABLO BENEDITO</option>
-                            <option value="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
-                            <option value="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
-                            <option value="02201310">THIAGO LUIS DE ASSIS</option>
-                            <option value="03101491">TIAGO REIS DA SILVA</option>
-                            <option value="03190611">VALMIR STOCCO MARTINS</option>
-                            <option value="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
-                            <option value="03101642">WILLIAM MEDINA DOS SANTOS</option>
-                            <option value="02201911">JOSUÉ VICENTE JUNIOR</option>
-                            <option value="02201910">MARISTELLA PEREIRA</option>
-                            <option value="02201905">KAUAN GABRIEL DOS SANTOS</option>
-                            <option value="02201898">FAGNER JUNIO DOS SANTOS</option>
-                            <option value="03101008">FLAVIO FERNANDES DOS SANTOS</option>
-                        </datalist>
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
                     </div>
 
                     <div class="form-group">
                         <label>Conferente *</label>
-                        <input list="ret_conferente_list" id="ret_conferente" placeholder="Digite..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                        <input type="text" list="ret_conferente_list" id="ret_conferente" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
                             <datalist id="ret_conferente_list">
-
-<option value="">-- Selecione --</option>
-                            <option value="01790206">ALBERTINO DOS SANTOS PRETO</option>
-                            <option value="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
-                            <option value="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
-                            <option value="02201736">DANIEL RODRIGUES DA SILVA</option>
-                            <option value="02201704">DIEGO DE MELO CARDOSO</option>
-                            <option value="02200735">EDILSON REZENDE DE OLIVEIRA</option>
-                            <option value="02200728">ELIAS POLIDORIO DOS SANTOS</option>
-                            <option value="02200624">GABRIEL DOS SANTOS SILVA</option>
-                            <option value="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
-                            <option value="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
-                            <option value="02201798">GUSTAVO FRANQUILINO VICENTE</option>
-                            <option value="03190595">HOBEDE PINHEIRO SOARES</option>
-                            <option value="02201826">JERONIMO CASSIMIRO CORREIA</option>
-                            <option value="02201661">JOAO VICTOR DE SOUZA MELO</option>
-                            <option value="02200134">JOAQUIM DE SOUZA PIRES</option>
-                            <option value="02200835">JOSE BARBOSA AIRES FILHO</option>
-                            <option value="01790198">JOSE BISPO FERREIRA</option>
-                            <option value="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
-                            <option value="02200742">KAUE JUVENCIO DA COSTA</option>
-                            <option value="03101049">KENNEDY FERNANDES DOS SANTOS</option>
-                            <option value="03102496">LAZARO DO NASCIMENTO SILVA</option>
-                            <option value="03102453">LENIN BENTO DA SILVA</option>
-                            <option value="02201030">LUIS HENRIQUE RIBEIRO</option>
-                            <option value="02201609">LUIZ EDUARDO CAETANO LOPES</option>
-                            <option value="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
-                            <option value="02200717">OSMAR ROMAO CARDOSO</option>
-                            <option value="03101034">PATRIK STEFEN SANTANA</option>
-                            <option value="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
-                            <option value="02201384">ROBERT FIRMINO DE LIMA</option>
-                            <option value="02201829">RUAN PABLO BENEDITO</option>
-                            <option value="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
-                            <option value="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
-                            <option value="02201310">THIAGO LUIS DE ASSIS</option>
-                            <option value="03101491">TIAGO REIS DA SILVA</option>
-                            <option value="03190611">VALMIR STOCCO MARTINS</option>
-                            <option value="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
-                            <option value="03101642">WILLIAM MEDINA DOS SANTOS</option>
-                            <option value="02201911">JOSUÉ VICENTE JUNIOR</option>
-                            <option value="02201910">MARISTELLA PEREIRA</option>
-                            <option value="02201905">KAUAN GABRIEL DOS SANTOS</option>
-                            <option value="02201898">FAGNER JUNIO DOS SANTOS</option>
-                            <option value="03101008">FLAVIO FERNANDES DOS SANTOS</option>
-                        </datalist>
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
                     </div>
 
                     <div class="form-group">
@@ -873,53 +810,52 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Operador Triagem *</label>
-                            <input list="tri_operador_list" id="tri_operador" placeholder="Digite..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                            <input type="text" list="tri_operador_list" id="tri_operador" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
                             <datalist id="tri_operador_list">
-
-<option value="">-- Selecione --</option>
-                            <option value="01790206">ALBERTINO DOS SANTOS PRETO</option>
-                            <option value="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
-                            <option value="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
-                            <option value="02201736">DANIEL RODRIGUES DA SILVA</option>
-                            <option value="02201704">DIEGO DE MELO CARDOSO</option>
-                            <option value="02200735">EDILSON REZENDE DE OLIVEIRA</option>
-                            <option value="02200728">ELIAS POLIDORIO DOS SANTOS</option>
-                            <option value="02200624">GABRIEL DOS SANTOS SILVA</option>
-                            <option value="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
-                            <option value="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
-                            <option value="02201798">GUSTAVO FRANQUILINO VICENTE</option>
-                            <option value="03190595">HOBEDE PINHEIRO SOARES</option>
-                            <option value="02201826">JERONIMO CASSIMIRO CORREIA</option>
-                            <option value="02201661">JOAO VICTOR DE SOUZA MELO</option>
-                            <option value="02200134">JOAQUIM DE SOUZA PIRES</option>
-                            <option value="02200835">JOSE BARBOSA AIRES FILHO</option>
-                            <option value="01790198">JOSE BISPO FERREIRA</option>
-                            <option value="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
-                            <option value="02200742">KAUE JUVENCIO DA COSTA</option>
-                            <option value="03101049">KENNEDY FERNANDES DOS SANTOS</option>
-                            <option value="03102496">LAZARO DO NASCIMENTO SILVA</option>
-                            <option value="03102453">LENIN BENTO DA SILVA</option>
-                            <option value="02201030">LUIS HENRIQUE RIBEIRO</option>
-                            <option value="02201609">LUIZ EDUARDO CAETANO LOPES</option>
-                            <option value="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
-                            <option value="02200717">OSMAR ROMAO CARDOSO</option>
-                            <option value="03101034">PATRIK STEFEN SANTANA</option>
-                            <option value="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
-                            <option value="02201384">ROBERT FIRMINO DE LIMA</option>
-                            <option value="02201829">RUAN PABLO BENEDITO</option>
-                            <option value="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
-                            <option value="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
-                            <option value="02201310">THIAGO LUIS DE ASSIS</option>
-                            <option value="03101491">TIAGO REIS DA SILVA</option>
-                            <option value="03190611">VALMIR STOCCO MARTINS</option>
-                            <option value="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
-                            <option value="03101642">WILLIAM MEDINA DOS SANTOS</option>
-                            <option value="02201911">JOSUÉ VICENTE JUNIOR</option>
-                            <option value="02201910">MARISTELLA PEREIRA</option>
-                            <option value="02201905">KAUAN GABRIEL DOS SANTOS</option>
-                            <option value="02201898">FAGNER JUNIO DOS SANTOS</option>
-                            <option value="03101008">FLAVIO FERNANDES DOS SANTOS</option>
-                        </datalist>
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
                         </div>
                         <div class="form-group">
                             <label>Op. Movimentação *</label>
@@ -1090,103 +1026,101 @@
                     <div class="form-row-3">
                         <div class="form-group">
                             <label>Operador *</label>
-                            <input list="sai_operador_list" id="sai_operador" placeholder="Digite..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                            <input type="text" list="sai_operador_list" id="sai_operador" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
                             <datalist id="sai_operador_list">
-
-<option value="">-- Selecione --</option>
-                            <option value="01790206">ALBERTINO DOS SANTOS PRETO</option>
-                            <option value="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
-                            <option value="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
-                            <option value="02201736">DANIEL RODRIGUES DA SILVA</option>
-                            <option value="02201704">DIEGO DE MELO CARDOSO</option>
-                            <option value="02200735">EDILSON REZENDE DE OLIVEIRA</option>
-                            <option value="02200728">ELIAS POLIDORIO DOS SANTOS</option>
-                            <option value="02200624">GABRIEL DOS SANTOS SILVA</option>
-                            <option value="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
-                            <option value="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
-                            <option value="02201798">GUSTAVO FRANQUILINO VICENTE</option>
-                            <option value="03190595">HOBEDE PINHEIRO SOARES</option>
-                            <option value="02201826">JERONIMO CASSIMIRO CORREIA</option>
-                            <option value="02201661">JOAO VICTOR DE SOUZA MELO</option>
-                            <option value="02200134">JOAQUIM DE SOUZA PIRES</option>
-                            <option value="02200835">JOSE BARBOSA AIRES FILHO</option>
-                            <option value="01790198">JOSE BISPO FERREIRA</option>
-                            <option value="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
-                            <option value="02200742">KAUE JUVENCIO DA COSTA</option>
-                            <option value="03101049">KENNEDY FERNANDES DOS SANTOS</option>
-                            <option value="03102496">LAZARO DO NASCIMENTO SILVA</option>
-                            <option value="03102453">LENIN BENTO DA SILVA</option>
-                            <option value="02201030">LUIS HENRIQUE RIBEIRO</option>
-                            <option value="02201609">LUIZ EDUARDO CAETANO LOPES</option>
-                            <option value="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
-                            <option value="02200717">OSMAR ROMAO CARDOSO</option>
-                            <option value="03101034">PATRIK STEFEN SANTANA</option>
-                            <option value="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
-                            <option value="02201384">ROBERT FIRMINO DE LIMA</option>
-                            <option value="02201829">RUAN PABLO BENEDITO</option>
-                            <option value="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
-                            <option value="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
-                            <option value="02201310">THIAGO LUIS DE ASSIS</option>
-                            <option value="03101491">TIAGO REIS DA SILVA</option>
-                            <option value="03190611">VALMIR STOCCO MARTINS</option>
-                            <option value="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
-                            <option value="03101642">WILLIAM MEDINA DOS SANTOS</option>
-                            <option value="02201911">JOSUÉ VICENTE JUNIOR</option>
-                            <option value="02201910">MARISTELLA PEREIRA</option>
-                            <option value="02201905">KAUAN GABRIEL DOS SANTOS</option>
-                            <option value="02201898">FAGNER JUNIO DOS SANTOS</option>
-                            <option value="03101008">FLAVIO FERNANDES DOS SANTOS</option>
-                        </datalist>
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
                         </div>
                         <div class="form-group">
                             <label>Conferente *</label>
-                            <input list="sai_conferente_list" id="sai_conferente" placeholder="Digite..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                            <input type="text" list="sai_conferente_list" id="sai_conferente" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
                             <datalist id="sai_conferente_list">
-
-<option value="">-- Selecione --</option>
-                            <option value="01790206">ALBERTINO DOS SANTOS PRETO</option>
-                            <option value="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
-                            <option value="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
-                            <option value="02201736">DANIEL RODRIGUES DA SILVA</option>
-                            <option value="02201704">DIEGO DE MELO CARDOSO</option>
-                            <option value="02200735">EDILSON REZENDE DE OLIVEIRA</option>
-                            <option value="02200728">ELIAS POLIDORIO DOS SANTOS</option>
-                            <option value="02200624">GABRIEL DOS SANTOS SILVA</option>
-                            <option value="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
-                            <option value="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
-                            <option value="02201798">GUSTAVO FRANQUILINO VICENTE</option>
-                            <option value="03190595">HOBEDE PINHEIRO SOARES</option>
-                            <option value="02201826">JERONIMO CASSIMIRO CORREIA</option>
-                            <option value="02201661">JOAO VICTOR DE SOUZA MELO</option>
-                            <option value="02200134">JOAQUIM DE SOUZA PIRES</option>
-                            <option value="02200835">JOSE BARBOSA AIRES FILHO</option>
-                            <option value="01790198">JOSE BISPO FERREIRA</option>
-                            <option value="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
-                            <option value="02200742">KAUE JUVENCIO DA COSTA</option>
-                            <option value="03101049">KENNEDY FERNANDES DOS SANTOS</option>
-                            <option value="03102496">LAZARO DO NASCIMENTO SILVA</option>
-                            <option value="03102453">LENIN BENTO DA SILVA</option>
-                            <option value="02201030">LUIS HENRIQUE RIBEIRO</option>
-                            <option value="02201609">LUIZ EDUARDO CAETANO LOPES</option>
-                            <option value="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
-                            <option value="02200717">OSMAR ROMAO CARDOSO</option>
-                            <option value="03101034">PATRIK STEFEN SANTANA</option>
-                            <option value="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
-                            <option value="02201384">ROBERT FIRMINO DE LIMA</option>
-                            <option value="02201829">RUAN PABLO BENEDITO</option>
-                            <option value="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
-                            <option value="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
-                            <option value="02201310">THIAGO LUIS DE ASSIS</option>
-                            <option value="03101491">TIAGO REIS DA SILVA</option>
-                            <option value="03190611">VALMIR STOCCO MARTINS</option>
-                            <option value="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
-                            <option value="03101642">WILLIAM MEDINA DOS SANTOS</option>
-                            <option value="02201911">JOSUÉ VICENTE JUNIOR</option>
-                            <option value="02201910">MARISTELLA PEREIRA</option>
-                            <option value="02201905">KAUAN GABRIEL DOS SANTOS</option>
-                            <option value="02201898">FAGNER JUNIO DOS SANTOS</option>
-                            <option value="03101008">FLAVIO FERNANDES DOS SANTOS</option>
-                        </datalist>
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
                         </div>
                         <div class="form-group">
                             <label>Op. Movimentação *</label>
@@ -1462,102 +1396,6 @@
             materiaisSaida = [];
             renderizarMateriais();
         }
-
-        // ===== FUNÇÃO DE AUTOCOMPLETE =====
-        function setupAutocomplete(inputId, selectId) {
-            const input = document.getElementById(inputId);
-            const select = document.getElementById(selectId);
-
-            input.addEventListener('input', function() {
-                const query = this.value.toLowerCase().trim();
-                const options = Array.from(select.options).slice(1); // Remove "--Selecione--"
-
-                if (query.length < 2) {
-                    // Menos de 2 letras = mostra todos
-                    showAllOptions(options);
-                    return;
-                }
-
-                // Filtra por query
-                const filtered = options.filter(opt => 
-                    opt.text.toLowerCase().includes(query)
-                );
-
-                showFilteredOptions(select, filtered);
-            });
-
-            input.addEventListener('blur', function() {
-                setTimeout(() => {
-                    document.querySelectorAll(`[data-select="${selectId}"]`).forEach(el => el.remove());
-                }, 200);
-            });
-        }
-
-        function showAllOptions(options) {
-            console.log(options.length + ' itens disponíveis');
-        }
-
-        function showFilteredOptions(select, filtered) {
-            // Atualizar select com itens filtrados
-            const originalOptions = Array.from(select.options);
-            select.innerHTML = originalOptions[0].outerHTML; // Manter "--Selecione--"
-            
-            filtered.forEach(opt => {
-                const newOpt = document.createElement('option');
-                newOpt.value = opt.value;
-                newOpt.text = opt.text;
-                select.appendChild(newOpt);
-            });
-        }
-
-        // ===== AUTOCOMPLETE COM DISPLAY DO NOME =====
-        document.addEventListener('DOMContentLoaded', function() {
-            const campos = [
-                {input: 'ret_loja', datalist: 'ret_loja_list'},
-                {input: 'ret_operador', datalist: 'ret_operador_list'},
-                {input: 'ret_conferente', datalist: 'ret_conferente_list'},
-                {input: 'tri_operador', datalist: 'tri_operador_list'},
-                {input: 'sai_operador', datalist: 'sai_operador_list'},
-                {input: 'sai_conferente', datalist: 'sai_conferente_list'}
-            ];
-
-            campos.forEach(campo => {
-                const input = document.getElementById(campo.input);
-                const datalist = document.getElementById(campo.datalist);
-                
-                if (!input || !datalist) return;
-
-                // Ao selecionar um item da datalist
-                input.addEventListener('change', function() {
-                    const selectedOption = Array.from(datalist.options).find(
-                        opt => opt.text === this.value || opt.value === this.value
-                    );
-                    
-                    if (selectedOption) {
-                        this.value = selectedOption.text; // Mostra o nome
-                        this.dataset.value = selectedOption.value; // Guarda o código
-                    }
-                });
-
-                // Ao digitar, mostra apenas o nome
-                input.addEventListener('input', function() {
-                    // Filtra conforme digita
-                    const query = this.value.toLowerCase();
-                    const options = Array.from(datalist.options);
-                    
-                    datalist.innerHTML = '';
-                    options.forEach(opt => {
-                        if (opt.text.toLowerCase().includes(query)) {
-                            const newOpt = document.createElement('option');
-                            newOpt.value = opt.text; // Mostra texto
-                            newOpt.dataset.id = opt.value; // Guarda ID
-                            datalist.appendChild(newOpt);
-                        }
-                    });
-                });
-            });
-        });
-
     </script>
 </body>
 </html>
