@@ -756,10 +756,22 @@
                                     <td style="text-align: center;" id="ret_div_11">-</td>
                                 </tr>
                                 <tr>
-                                    <td>STRETCH</td>
+                                    <td>CESTOS</td>
                                     <td><input type="number" id="ret_qtd_fis_12" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(12)"></td>
                                     <td><input type="number" id="ret_qtd_nf_12" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(12)"></td>
                                     <td style="text-align: center;" id="ret_div_12">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CARRINHO BIMBO</td>
+                                    <td><input type="number" id="ret_qtd_fis_13" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(13)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_13" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(13)"></td>
+                                    <td style="text-align: center;" id="ret_div_13">-</td>
+                                </tr>
+                                <tr>
+                                    <td>STRETCH</td>
+                                    <td><input type="number" id="ret_qtd_fis_14" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(14)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_14" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(14)"></td>
+                                    <td style="text-align: center;" id="ret_div_14">-</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1198,6 +1210,27 @@
                     <button class="btn btn-secondary" onclick="limparFiltroData()">✕ Limpar</button>
                     <button class="btn btn-success" onclick="exportarTudo()" style="background: #28a745;">📥 Exportar</button>
                     <button class="btn btn-danger" onclick="resetarTudo()" style="background: #cc0000;">⚠️ RESETAR</button>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">📦 Retornos</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Loja</th>
+                                    <th>NF</th>
+                                    <th>Operador</th>
+                                    <th>Conferente</th>
+                                    <th style="width: 80px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela_retornos_historico">
+                                <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="card" style="margin-top: 20px;">
@@ -1671,6 +1704,29 @@
                             <button class="btn btn-danger btn-small" onclick="excluirRetorno(${idx})" title="Excluir">🗑️</button>
                         </div>
                     </td>
+                </tr>
+            `).join('');
+            
+            // Atualizar também a tabela do Histórico
+            atualizarTabelaRetornosHistorico(dados);
+        }
+        
+        function atualizarTabelaRetornosHistorico(dados) {
+            const tbody = document.getElementById('tabela_retornos_historico');
+            if (!tbody) return;
+            
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>';
+                return;
+            }
+            tbody.innerHTML = dados.map((item, idx) => `
+                <tr>
+                    <td>${item.data}</td>
+                    <td>${item.loja}</td>
+                    <td>${item.nf}</td>
+                    <td>${item.operador}</td>
+                    <td>${item.conferente}</td>
+                    <td><button class="btn btn-danger btn-small" onclick="excluirRetorno(${idx})">🗑️</button></td>
                 </tr>
             `).join('');
         }
