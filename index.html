@@ -771,10 +771,30 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- LISTA DE RETORNOS (ADICIONADO) -->
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">📋 Histórico de Retornos</div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Loja</th>
+                                    <th>NF</th>
+                                    <th>Operador</th>
+                                    <th>Conferente</th>
+                                    <th style="width: 100px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela_retornos">
+                                <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- TAB 2: TRIAGEM -->
         <div id="triagem" class="tab-content">
             <div class="layout-2col">
                 <div class="card">
@@ -1210,27 +1230,6 @@
                 </div>
 
                 <div class="card" style="margin-top: 20px;">
-                    <div class="card-title">📦 Retornos</div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Loja</th>
-                                    <th>NF</th>
-                                    <th>Operador</th>
-                                    <th>Conferente</th>
-                                    <th style="width: 80px;">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabela_retornos">
-                                <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: 20px;">
                     <div class="card-title">📋 Triagens</div>
                     <div class="table-container">
                         <table>
@@ -1406,14 +1405,58 @@
                 return;
             }
             
-            alert('✅ Retorno salvo com sucesso!\nNF: ' + nf + ' | Loja: ' + loja);
+            const editIdx = document.getElementById('ret_data').dataset.editIdx;
+            
+            if (editIdx !== undefined) {
+                // EDIÇÃO: Atualizar registro existente
+                retornosHistorico[editIdx] = {
+                    id: retornosHistorico[editIdx].id,
+                    data: document.getElementById('ret_data').value,
+                    loja: loja,
+                    nf: nf,
+                    operador: operador,
+                    conferente: document.getElementById('ret_conferente').value || ''
+                };
+                alert('✅ Retorno atualizado com sucesso!\nNF: ' + nf + ' | Loja: ' + loja);
+                delete document.getElementById('ret_data').dataset.editIdx;
+            } else {
+                // NOVO: Criar novo registro
+                const novoRetorno = {
+                    id: Date.now(),
+                    data: document.getElementById('ret_data').value,
+                    loja: loja,
+                    nf: nf,
+                    operador: operador,
+                    conferente: document.getElementById('ret_conferente').value || ''
+                };
+                retornosHistorico.push(novoRetorno);
+                alert('✅ Retorno salvo com sucesso!\nNF: ' + nf + ' | Loja: ' + loja);
+            }
+            
+            salvarDados();
+            atualizarTabelas();
+            atualizarOpcoesTriagem();
             limparFormRetorno();
         }
 
         // TRIAGEM
         function autofillTriagem() {
-    // Dados virão do localStorage quando um retorno for selecionado
-}
+            const retornoId = document.getElementById('tri_retorno').value;
+            if (!retornoId) {
+                document.getElementById('tri_data_rec').value = '';
+                document.getElementById('tri_loja').value = '';
+                document.getElementById('tri_nf').value = '';
+                return;
+            }
+            
+            // Buscar dados do retorno no array retornosGuardados
+            const retorno = retornosGuardados.find(r => r.id == retornoId);
+            if (retorno) {
+                document.getElementById('tri_data_rec').value = retorno.data || '';
+                document.getElementById('tri_loja').value = retorno.loja || '';
+                document.getElementById('tri_nf').value = retorno.nf || '';
+            }
+        }
 
         function limparFormTriagem() {
             document.getElementById('tri_retorno').value = '';
@@ -1641,7 +1684,7 @@
         function atualizarTabelaRetornos(dados) {
             const tbody = document.getElementById('tabela_retornos');
             if (dados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>';
                 return;
             }
             tbody.innerHTML = dados.map((item, idx) => `
@@ -1651,7 +1694,12 @@
                     <td>${item.nf}</td>
                     <td>${item.operador}</td>
                     <td>${item.conferente}</td>
-                    <td><button class="btn btn-danger btn-small" onclick="excluirRetorno(${idx})">🗑️</button></td>
+                    <td style="width: 100px;">
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn btn-success btn-small" onclick="editarRetorno(${idx})" title="Editar">✏️</button>
+                            <button class="btn btn-danger btn-small" onclick="excluirRetorno(${idx})" title="Excluir">🗑️</button>
+                        </div>
+                    </td>
                 </tr>
             `).join('');
         }
@@ -1689,6 +1737,34 @@
                     <td><button class="btn btn-danger btn-small" onclick="excluirSaida(${idx})">🗑️</button></td>
                 </tr>
             `).join('');
+        }
+
+        // ===== EDIÇÃO =====
+        function editarRetorno(idx) {
+            const retorno = retornosHistorico[idx];
+            if (!retorno) return;
+            
+            // Preencher formulário com dados
+            document.getElementById('ret_data').value = retorno.data || '';
+            document.getElementById('ret_loja').value = retorno.loja || '';
+            document.getElementById('ret_nf').value = retorno.nf || '';
+            document.getElementById('ret_operador').value = retorno.operador || '';
+            document.getElementById('ret_conferente').value = retorno.conferente || '';
+            
+            // Preencher código da loja
+            const loja = REVERSALOG_DATA.lojas.find(l => l.nome === retorno.loja);
+            if (loja) {
+                document.getElementById('ret_codigo_loja').value = loja.codigo;
+            }
+            
+            // Armazenar índice para saber que está editando
+            document.getElementById('ret_data').dataset.editIdx = idx;
+            
+            // Scroll para o topo do formulário
+            document.getElementById('ret_data').scrollIntoView({ behavior: 'smooth' });
+            
+            // Destaque visual
+            document.getElementById('ret_data').focus();
         }
 
         // ===== EXCLUSÃO =====
