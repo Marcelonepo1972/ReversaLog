@@ -1453,8 +1453,8 @@
                 return;
             }
             
-            // Buscar dados do retorno no array retornosGuardados
-            const retorno = retornosGuardados.find(r => r.id == retornoId);
+            // Buscar dados do retorno no array retornosHistorico
+            const retorno = retornosHistorico.find(r => r.id == retornoId);
             if (retorno) {
                 document.getElementById('tri_data_rec').value = retorno.data || '';
                 document.getElementById('tri_loja').value = retorno.loja || '';
@@ -1578,43 +1578,15 @@
         }
 
         // ===== ARRAYS DE HISTÓRICO (GLOBAIS) =====
-        let retornosHistorico = JSON.parse(localStorage.getItem('retornos_historico')) || [];
-        let triagensHistorico = JSON.parse(localStorage.getItem('triagens_historico')) || [];
-        let saidasHistorico = JSON.parse(localStorage.getItem('saidas_historico')) || [];
-        let retornosGuardados = JSON.parse(localStorage.getItem('retornos_guardados')) || [];
-
-        // ===== SALVAR RETORNO (SOBRESCREVER FUNÇÃO EXISTENTE) =====
-        const salvarRetornoOriginal = window.salvarRetorno;
-        window.salvarRetorno = function() {
-            salvarRetornoOriginal();
-            const loja = document.getElementById('ret_loja').value;
-            const nf = document.getElementById('ret_nf').value;
-            const operador = document.getElementById('ret_operador').value;
-            
-            if (loja && nf && operador) {
-                const retorno = {
-                    id: Date.now(),
-                    data: new Date().toISOString().split('T')[0],
-                    loja: loja,
-                    nf: nf,
-                    operador: operador,
-                    conferente: document.getElementById('ret_conferente').value || ''
-                };
-                
-                retornosGuardados.push(retorno);
-                retornosHistorico.push(retorno);
-                salvarDados(); // Persistir em Firebase → GitHub → localStorage
-                sincronizarComPaletCD(retorno); // Sincronizar paletes com PaletCD
-                atualizarOpcoesTriagem();
-                atualizarTabelas();
-            }
-        };
+        let retornosHistorico = JSON.parse(localStorage.getItem('reversalog_retornos')) || [];
+        let triagensHistorico = JSON.parse(localStorage.getItem('reversalog_triagens')) || [];
+        let saidasHistorico = JSON.parse(localStorage.getItem('reversalog_saidas')) || [];
 
         // ===== ATUALIZAR OPÇÕES TRIAGEM =====
         function atualizarOpcoesTriagem() {
             const select = document.getElementById('tri_retorno');
             select.innerHTML = '<option value="">-- Selecione um Retorno --</option>';
-            retornosGuardados.forEach(ret => {
+            retornosHistorico.forEach(ret => {
                 const option = document.createElement('option');
                 option.value = ret.id;
                 option.textContent = `${ret.nf} - ${ret.loja}`;
@@ -1625,7 +1597,7 @@
         // ===== AUTOFILL TRIAGEM =====
         function autofillTriagem() {
             const retornoId = document.getElementById('tri_retorno').value;
-            const retorno = retornosGuardados.find(r => r.id == retornoId);
+            const retorno = retornosHistorico.find(r => r.id == retornoId);
             
             if (retorno) {
                 document.getElementById('tri_data_rec').value = retorno.data;
@@ -1634,49 +1606,7 @@
             }
         }
 
-        // ===== SALVAR TRIAGEM (SOBRESCREVER) =====
-        const salvarTriagemOriginal = window.salvarTriagem;
-        window.salvarTriagem = function() {
-            salvarTriagemOriginal();
-            const retornoId = document.getElementById('tri_retorno').value;
-            if (retornoId) {
-                const triagem = {
-                    id: Date.now(),
-                    data: new Date().toISOString().split('T')[0],
-                    loja: document.getElementById('tri_loja').value,
-                    nf: document.getElementById('tri_nf').value,
-                    volume: document.getElementById('tri_qtd').value,
-                    operador: document.getElementById('tri_operador').value
-                };
-                
-                triagensHistorico.push(triagem);
-                salvarDados(); // Persistir em Firebase → GitHub → localStorage
-                atualizarTabelas();
-            }
-        };
-
-        // ===== SALVAR SAÍDA (SOBRESCREVER) =====
-        const salvarSaidaOriginal = window.salvarSaidaCompleta;
-        window.salvarSaidaCompleta = function() {
-            salvarSaidaOriginal();
-            const controle = document.getElementById('sai_controle').value;
-            const fornecedor = document.getElementById('sai_fornecedor').value;
-            const operador = document.getElementById('sai_operador').value;
-            
-            if (controle && fornecedor && operador) {
-                const saida = {
-                    id: Date.now(),
-                    data: new Date().toISOString().split('T')[0],
-                    controle: controle,
-                    fornecedor: fornecedor,
-                    operador: operador
-                };
-                
-                saidasHistorico.push(saida);
-                salvarDados(); // Persistir em Firebase → GitHub → localStorage
-                atualizarTabelas();
-            }
-        };
+        // ===== TRIAGEM CARREGADA DO RETORNO =====
 
         // ===== ATUALIZAR TABELAS =====
         function atualizarTabelas() {
@@ -1873,7 +1803,6 @@
                 retornosHistorico = [];
                 triagensHistorico = [];
                 saidasHistorico = [];
-                retornosGuardados = [];
                 
                 salvarDados(); // Limpar em Firebase → GitHub → localStorage
                 
@@ -1915,7 +1844,6 @@
                 retornos: retornosHistorico,
                 triagens: triagensHistorico,
                 saidas: saidasHistorico,
-                retornosGuardados: retornosGuardados,
                 timestamp: new Date().toISOString()
             };
 
@@ -1937,7 +1865,6 @@
             localStorage.setItem('reversalog_retornos', JSON.stringify(retornosHistorico));
             localStorage.setItem('reversalog_triagens', JSON.stringify(triagensHistorico));
             localStorage.setItem('reversalog_saidas', JSON.stringify(saidasHistorico));
-            localStorage.setItem('reversalog_retornos_guardados', JSON.stringify(retornosGuardados));
         }
 
         // Salvar em GitHub (via webhook ou commit automático)
@@ -1987,8 +1914,7 @@
                 dados = {
                     retornos: JSON.parse(localStorage.getItem('reversalog_retornos')) || [],
                     triagens: JSON.parse(localStorage.getItem('reversalog_triagens')) || [],
-                    saidas: JSON.parse(localStorage.getItem('reversalog_saidas')) || [],
-                    retornosGuardados: JSON.parse(localStorage.getItem('reversalog_retornos_guardados')) || []
+                    saidas: JSON.parse(localStorage.getItem('reversalog_saidas')) || []
                 };
                 console.log('✅ Dados carregados do localStorage (fallback)');
             }
@@ -1997,7 +1923,6 @@
             retornosHistorico = dados.retornos || [];
             triagensHistorico = dados.triagens || [];
             saidasHistorico = dados.saidas || [];
-            retornosGuardados = dados.retornosGuardados || [];
         }
 
         // ===== INTEGRAÇÃO PALETCD =====
