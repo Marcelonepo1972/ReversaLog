@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Logística Reversa</title>
+    <title>Sistema de Logística Reversa - ReversaLog</title>
+    
+    <!-- Dados do Sistema (90 lojas, 42 colaboradores, 13 produtos) -->
+    <script src="dados.js"></script>
+    
+    <!-- Firebase (Realtime Database) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+    
+    <!-- XLSX (Excel Export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -427,6 +438,9 @@
             </button>
             <button class="tab-btn" onclick="switchTab('saida')">
                 🚚 Saída de Fornecedores
+            </button>
+            <button class="tab-btn" onclick="switchTab('historico')">
+                📊 Histórico
             </button>
         </div>
 
@@ -1172,33 +1186,86 @@
                                 </tr>
                             </thead>
                             <tbody id="sai_table_body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TAB 4: HISTÓRICO -->
+        <div id="historico" class="tab-content">
+            <div class="card">
+                <div class="card-title">📊 Histórico Completo</div>
+                
+                <div style="margin-bottom: 20px; padding: 15px; background: var(--surface-alt); border-radius: 4px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <input type="date" id="filtro_data_inicio" style="padding: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; max-width: 150px;">
+                    <span style="color: var(--text-secondary);">até</span>
+                    <input type="date" id="filtro_data_fim" style="padding: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; max-width: 150px;">
+                    <button class="btn btn-primary" onclick="aplicarFiltroData()">🔍 Filtrar</button>
+                    <button class="btn btn-secondary" onclick="limparFiltroData()">✕ Limpar</button>
+                    <button class="btn btn-success" onclick="exportarTudo()" style="background: #28a745;">📥 Exportar</button>
+                    <button class="btn btn-danger" onclick="resetarTudo()" style="background: #cc0000;">⚠️ RESETAR</button>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">📦 Retornos</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>2026-02-16</td>
-                                    <td>VP2024-9KGD14</td>
-                                    <td>YAKULT S A</td>
-                                    <td>PALETE PBR</td>
-                                    <td>6</td>
-                                    <td>6</td>
-                                    <td>0</td>
+                                    <th>Data</th>
+                                    <th>Loja</th>
+                                    <th>NF</th>
+                                    <th>Operador</th>
+                                    <th>Conferente</th>
+                                    <th style="width: 80px;">Ações</th>
                                 </tr>
+                            </thead>
+                            <tbody id="tabela_retornos">
+                                <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">📋 Triagens</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>2025-12-02</td>
-                                    <td>VP2025-LF370</td>
-                                    <td>124 - OBA BAHIA</td>
-                                    <td>PALETE PBR</td>
-                                    <td>--</td>
-                                    <td>56</td>
-                                    <td class="divergencia-negativa">56</td>
+                                    <th>Data</th>
+                                    <th>Loja</th>
+                                    <th>NF</th>
+                                    <th>Volume</th>
+                                    <th>Operador</th>
+                                    <th style="width: 80px;">Ações</th>
                                 </tr>
+                            </thead>
+                            <tbody id="tabela_triagens">
+                                <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">🚚 Saídas</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>2025-12-02</td>
-                                    <td>1578402</td>
-                                    <td>124 - OBA BAHIA</td>
-                                    <td>CAIXA P</td>
-                                    <td>--</td>
-                                    <td>2400</td>
-                                    <td class="divergencia-negativa">2400</td>
+                                    <th>Data</th>
+                                    <th>Controle</th>
+                                    <th>Fornecedor</th>
+                                    <th>Operador</th>
+                                    <th style="width: 80px;">Ações</th>
                                 </tr>
+                            </thead>
+                            <tbody id="tabela_saidas">
+                                <tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1213,6 +1280,91 @@
     </div>
 
     <script>
+        // ===== INICIALIZAR DADOS DO SISTEMA =====
+        // Carrega automaticamente dos dados em dados.js
+        
+        // Variáveis globais de dados
+        let LOJAS = [];
+        let PRODUTOS = [];
+        let COLABORADORES = [];
+
+        // Função para inicializar dropdowns com dados reais
+        function inicializarDadosSistema() {
+            // Verificar se REVERSALOG_DATA foi carregado
+            if (typeof REVERSALOG_DATA === 'undefined') {
+                console.error('❌ REVERSALOG_DATA não carregado! Verifique se dados.js está presente.');
+                return false;
+            }
+
+            // Atribuir aos arrays globais
+            LOJAS = REVERSALOG_DATA.lojas || [];
+            PRODUTOS = REVERSALOG_DATA.produtos || [];
+            COLABORADORES = REVERSALOG_DATA.colaboradores || [];
+
+            console.log(`✅ Sistema iniciado com ${LOJAS.length} lojas, ${COLABORADORES.length} colaboradores, ${PRODUTOS.length} produtos`);
+
+            // Popular dropdowns de lojas
+            const selectLojas = document.getElementById('ret_loja');
+            if (selectLojas) {
+                selectLojas.innerHTML = '<option value="">-- Selecione uma Loja --</option>';
+                LOJAS.forEach(loja => {
+                    const opt = document.createElement('option');
+                    opt.value = loja.nome;
+                    opt.dataset.codigo = loja.codigo;
+                    opt.textContent = `${loja.nome} (${loja.codigo})`;
+                    selectLojas.appendChild(opt);
+                });
+            }
+
+            // Popular dropdowns de colaboradores
+            const dropdownsColab = [
+                'ret_operador', 'ret_conferente',
+                'tri_operador', 'sai_operador', 'sai_conferente'
+            ];
+
+            dropdownsColab.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">-- Selecione --</option>';
+                    COLABORADORES.forEach(colab => {
+                        const opt = document.createElement('option');
+                        opt.value = colab.nome;
+                        opt.title = `${colab.cargo} - ${colab.turno}`;
+                        opt.textContent = colab.nome;
+                        select.appendChild(opt);
+                    });
+                }
+            });
+
+            // Atualizar código da loja quando selecionada
+            if (selectLojas) {
+                selectLojas.addEventListener('change', function() {
+                    const loja = LOJAS.find(l => l.nome === this.value);
+                    const codigoInput = document.getElementById('ret_codigo_loja');
+                    if (codigoInput && loja) {
+                        codigoInput.value = loja.codigo;
+                    }
+                });
+            }
+
+            return true;
+        }
+
+        // Função para preencher datalists com dados
+        function inicializarDataLists() {
+            // Datalist para operadores (se existir)
+            const operadorDatalist = document.getElementById('ret_operador_list');
+            if (operadorDatalist) {
+                operadorDatalist.innerHTML = '';
+                COLABORADORES.forEach(colab => {
+                    const opt = document.createElement('option');
+                    opt.value = colab.nome;
+                    opt.dataset.id = colab.matricula;
+                    operadorDatalist.appendChild(opt);
+                });
+            }
+        }
+
         // Array global para armazenar materiais da saída
         let materiaisSaida = [];
 
@@ -1254,65 +1406,28 @@
                 return;
             }
             
-            // Coletar apenas caixas plásticas P, M, G e caradori
-            const caixasPlasticas = {
-                'CAIXA PLASTICA MODELO P': parseInt(document.getElementById('ret_qtd_fis_3')?.value || 0),
-                'CAIXA PLASTICA MODELO M': parseInt(document.getElementById('ret_qtd_fis_4')?.value || 0),
-                'CAIXA PLASTICA MODELO G': parseInt(document.getElementById('ret_qtd_fis_5')?.value || 0),
-                'CARADORI': parseInt(document.getElementById('ret_qtd_fis_6')?.value || 0)
-            };
-            
-            // Guardar retorno no array
-            const retorno = {
-                id: 'ret_' + Date.now(),
-                dataRecebimento: new Date().toISOString().split('T')[0],
-                loja: loja,
-                nf: nf,
-                materiais: caixasPlasticas
-            };
-            
-            retornosGuardados.push(retorno);
-            
             alert('✅ Retorno salvo com sucesso!\nNF: ' + nf + ' | Loja: ' + loja);
-            atualizarOpcoesTriagem();
             limparFormRetorno();
-        }
-
-        // Array para guardar retornos
-        let retornosGuardados = [];
-
-        // Atualizar dropdown de triagem com retornos salvos
-        function atualizarOpcoesTriagem() {
-            const select = document.getElementById('tri_retorno');
-            select.innerHTML = '<option value="">-- Selecione --</option>';
-            
-            retornosGuardados.forEach(ret => {
-                const option = document.createElement('option');
-                option.value = ret.id;
-                option.textContent = `${ret.nf} - ${ret.loja}`;
-                select.appendChild(option);
-            });
         }
 
         // TRIAGEM
         function autofillTriagem() {
-            const retornoId = document.getElementById('tri_retorno').value;
-            const retorno = retornosGuardados.find(r => r.id === retornoId);
-            
-            if (retorno) {
-                // Preenche automaticamente os campos que vêm do retorno
-                document.getElementById('tri_data_rec').value = retorno.dataRecebimento;
-                document.getElementById('tri_loja').value = retorno.loja;
-                document.getElementById('tri_nf').value = retorno.nf;
-                
-                // Calcula quantidade total de caixas plásticas
-                const totalCaixas = Object.values(retorno.materiais).reduce((a, b) => a + b, 0);
-                document.getElementById('tri_qtd').value = totalCaixas;
-                
-                // Campos MANUAIS (não preenchidos):
-                // - tri_data_tri (Data da triagem)
-                // - tri_operador (Operador triagem)
-                // - tri_movimentacao (Op. Movimentação)
+            const retorno = document.getElementById('tri_retorno').value;
+            if (retorno === 'ret_001') {
+                document.getElementById('tri_data_rec').value = '2026-05-20';
+                document.getElementById('tri_loja').value = 'Piracicaba';
+                document.getElementById('tri_nf').value = '20234';
+                document.getElementById('tri_qtd').value = '99';
+            } else if (retorno === 'ret_002') {
+                document.getElementById('tri_data_rec').value = '2026-05-18';
+                document.getElementById('tri_loja').value = 'Carolina';
+                document.getElementById('tri_nf').value = '13003';
+                document.getElementById('tri_qtd').value = '50';
+            } else if (retorno === 'ret_003') {
+                document.getElementById('tri_data_rec').value = '2026-05-17';
+                document.getElementById('tri_loja').value = 'Bonfim';
+                document.getElementById('tri_nf').value = '15678';
+                document.getElementById('tri_qtd').value = '30';
             }
         }
 
@@ -1430,6 +1545,431 @@
             materiaisSaida = [];
             renderizarMateriais();
         }
+
+        // ===== ARRAYS DE HISTÓRICO (GLOBAIS) =====
+        let retornosHistorico = JSON.parse(localStorage.getItem('retornos_historico')) || [];
+        let triagensHistorico = JSON.parse(localStorage.getItem('triagens_historico')) || [];
+        let saidasHistorico = JSON.parse(localStorage.getItem('saidas_historico')) || [];
+        let retornosGuardados = JSON.parse(localStorage.getItem('retornos_guardados')) || [];
+
+        // ===== SALVAR RETORNO (SOBRESCREVER FUNÇÃO EXISTENTE) =====
+        const salvarRetornoOriginal = window.salvarRetorno;
+        window.salvarRetorno = function() {
+            salvarRetornoOriginal();
+            const loja = document.getElementById('ret_loja').value;
+            const nf = document.getElementById('ret_nf').value;
+            const operador = document.getElementById('ret_operador').value;
+            
+            if (loja && nf && operador) {
+                const retorno = {
+                    id: Date.now(),
+                    data: new Date().toISOString().split('T')[0],
+                    loja: loja,
+                    nf: nf,
+                    operador: operador,
+                    conferente: document.getElementById('ret_conferente').value || ''
+                };
+                
+                retornosGuardados.push(retorno);
+                retornosHistorico.push(retorno);
+                salvarDados(); // Persistir em Firebase → GitHub → localStorage
+                sincronizarComPaletCD(retorno); // Sincronizar paletes com PaletCD
+                atualizarOpcoesTriagem();
+                atualizarTabelas();
+            }
+        };
+
+        // ===== ATUALIZAR OPÇÕES TRIAGEM =====
+        function atualizarOpcoesTriagem() {
+            const select = document.getElementById('tri_retorno');
+            select.innerHTML = '<option value="">-- Selecione um Retorno --</option>';
+            retornosGuardados.forEach(ret => {
+                const option = document.createElement('option');
+                option.value = ret.id;
+                option.textContent = `${ret.nf} - ${ret.loja}`;
+                select.appendChild(option);
+            });
+        }
+
+        // ===== AUTOFILL TRIAGEM =====
+        function autofillTriagem() {
+            const retornoId = document.getElementById('tri_retorno').value;
+            const retorno = retornosGuardados.find(r => r.id == retornoId);
+            
+            if (retorno) {
+                document.getElementById('tri_data_rec').value = retorno.data;
+                document.getElementById('tri_loja').value = retorno.loja;
+                document.getElementById('tri_nf').value = retorno.nf;
+            }
+        }
+
+        // ===== SALVAR TRIAGEM (SOBRESCREVER) =====
+        const salvarTriagemOriginal = window.salvarTriagem;
+        window.salvarTriagem = function() {
+            salvarTriagemOriginal();
+            const retornoId = document.getElementById('tri_retorno').value;
+            if (retornoId) {
+                const triagem = {
+                    id: Date.now(),
+                    data: new Date().toISOString().split('T')[0],
+                    loja: document.getElementById('tri_loja').value,
+                    nf: document.getElementById('tri_nf').value,
+                    volume: document.getElementById('tri_qtd').value,
+                    operador: document.getElementById('tri_operador').value
+                };
+                
+                triagensHistorico.push(triagem);
+                salvarDados(); // Persistir em Firebase → GitHub → localStorage
+                atualizarTabelas();
+            }
+        };
+
+        // ===== SALVAR SAÍDA (SOBRESCREVER) =====
+        const salvarSaidaOriginal = window.salvarSaidaCompleta;
+        window.salvarSaidaCompleta = function() {
+            salvarSaidaOriginal();
+            const controle = document.getElementById('sai_controle').value;
+            const fornecedor = document.getElementById('sai_fornecedor').value;
+            const operador = document.getElementById('sai_operador').value;
+            
+            if (controle && fornecedor && operador) {
+                const saida = {
+                    id: Date.now(),
+                    data: new Date().toISOString().split('T')[0],
+                    controle: controle,
+                    fornecedor: fornecedor,
+                    operador: operador
+                };
+                
+                saidasHistorico.push(saida);
+                salvarDados(); // Persistir em Firebase → GitHub → localStorage
+                atualizarTabelas();
+            }
+        };
+
+        // ===== ATUALIZAR TABELAS =====
+        function atualizarTabelas() {
+            atualizarTabelaRetornos(retornosHistorico);
+            atualizarTabelaTriagens(triagensHistorico);
+            atualizarTabelaSaidas(saidasHistorico);
+        }
+
+        function atualizarTabelaRetornos(dados) {
+            const tbody = document.getElementById('tabela_retornos');
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>';
+                return;
+            }
+            tbody.innerHTML = dados.map((item, idx) => `
+                <tr>
+                    <td>${item.data}</td>
+                    <td>${item.loja}</td>
+                    <td>${item.nf}</td>
+                    <td>${item.operador}</td>
+                    <td>${item.conferente}</td>
+                    <td><button class="btn btn-danger btn-small" onclick="excluirRetorno(${idx})">🗑️</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function atualizarTabelaTriagens(dados) {
+            const tbody = document.getElementById('tabela_triagens');
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>';
+                return;
+            }
+            tbody.innerHTML = dados.map((item, idx) => `
+                <tr>
+                    <td>${item.data}</td>
+                    <td>${item.loja}</td>
+                    <td>${item.nf}</td>
+                    <td>${item.volume}</td>
+                    <td>${item.operador}</td>
+                    <td><button class="btn btn-danger btn-small" onclick="excluirTriagem(${idx})">🗑️</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function atualizarTabelaSaidas(dados) {
+            const tbody = document.getElementById('tabela_saidas');
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>';
+                return;
+            }
+            tbody.innerHTML = dados.map((item, idx) => `
+                <tr>
+                    <td>${item.data}</td>
+                    <td>${item.controle}</td>
+                    <td>${item.fornecedor}</td>
+                    <td>${item.operador}</td>
+                    <td><button class="btn btn-danger btn-small" onclick="excluirSaida(${idx})">🗑️</button></td>
+                </tr>
+            `).join('');
+        }
+
+        // ===== EXCLUSÃO =====
+        function excluirRetorno(idx) {
+            if (confirm('Tem certeza que deseja excluir?')) {
+                retornosHistorico.splice(idx, 1);
+                salvarDados(); // Persistir
+                atualizarTabelas();
+                atualizarOpcoesTriagem();
+            }
+        }
+
+        function excluirTriagem(idx) {
+            if (confirm('Tem certeza que deseja excluir?')) {
+                triagensHistorico.splice(idx, 1);
+                salvarDados(); // Persistir
+                atualizarTabelas();
+            }
+        }
+
+        function excluirSaida(idx) {
+            if (confirm('Tem certeza que deseja excluir?')) {
+                saidasHistorico.splice(idx, 1);
+                salvarDados(); // Persistir
+                atualizarTabelas();
+            }
+        }
+
+        // ===== FILTRO POR DATA =====
+        function aplicarFiltroData() {
+            const dataInicio = document.getElementById('filtro_data_inicio').value;
+            const dataFim = document.getElementById('filtro_data_fim').value;
+            
+            if (!dataInicio || !dataFim) {
+                alert('Preencha as duas datas!');
+                return;
+            }
+            
+            const retornosFiltrados = retornosHistorico.filter(r => r.data >= dataInicio && r.data <= dataFim);
+            const triagemnsFiltradas = triagensHistorico.filter(t => t.data >= dataInicio && t.data <= dataFim);
+            const saidasFiltradas = saidasHistorico.filter(s => s.data >= dataInicio && s.data <= dataFim);
+            
+            atualizarTabelaRetornos(retornosFiltrados);
+            atualizarTabelaTriagens(triagemnsFiltradas);
+            atualizarTabelaSaidas(saidasFiltradas);
+        }
+
+        function limparFiltroData() {
+            document.getElementById('filtro_data_inicio').value = '';
+            document.getElementById('filtro_data_fim').value = '';
+            atualizarTabelas();
+        }
+
+        // ===== EXPORTAR EXCEL =====
+        function exportarTudo() {
+            if (retornosHistorico.length === 0 && triagensHistorico.length === 0 && saidasHistorico.length === 0) {
+                alert('Nenhum dado para exportar!');
+                return;
+            }
+            
+            const wb = XLSX.utils.book_new();
+            
+            if (retornosHistorico.length > 0) {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(retornosHistorico), 'Retornos');
+            }
+            if (triagensHistorico.length > 0) {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(triagensHistorico), 'Triagens');
+            }
+            if (saidasHistorico.length > 0) {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(saidasHistorico), 'Saídas');
+            }
+            
+            XLSX.writeFile(wb, 'Reversa_' + new Date().toISOString().split('T')[0] + '.xlsx');
+        }
+
+        // ===== RESETAR TUDO =====
+        function resetarTudo() {
+            if (confirm('⚠️ RESETAR TUDO? Esta ação NÃO pode ser desfeita!')) {
+                retornosHistorico = [];
+                triagensHistorico = [];
+                saidasHistorico = [];
+                retornosGuardados = [];
+                
+                salvarDados(); // Limpar em Firebase → GitHub → localStorage
+                
+                document.getElementById('tri_retorno').innerHTML = '<option value="">-- Selecione um Retorno --</option>';
+                atualizarTabelas();
+                
+                alert('✅ TUDO RESETADO!');
+            }
+        }
+
+        // ===== PERSISTÊNCIA: FIREBASE → GITHUB → LOCALSTORAGE =====
+        
+        // Firebase Configuration (PaletCD Shared Database)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9qVsBjf_v59TN8Ayvarts5Q7LXxzlVrQ",
+            authDomain: "paletcd.firebaseapp.com",
+            databaseURL: "https://paletcd-default-rtdb.firebaseio.com",
+            projectId: "paletcd",
+            storageBucket: "paletcd.firebasestorage.app",
+            messagingSenderId: "431517046970",
+            appId: "1:431517046970:web:e03e0ff01e1b898275ca83"
+        };
+
+        let firebaseInitialized = false;
+
+        // Tentar inicializar Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            firebaseInitialized = true;
+            console.log('✅ Firebase inicializado (PaletCD)');
+        } catch (error) {
+            console.warn('⚠️ Firebase não disponível:', error);
+            firebaseInitialized = false;
+        }
+
+        // Salvar em Firebase → GitHub → localStorage
+        async function salvarDados() {
+            const dados = {
+                retornos: retornosHistorico,
+                triagens: triagensHistorico,
+                saidas: saidasHistorico,
+                retornosGuardados: retornosGuardados,
+                timestamp: new Date().toISOString()
+            };
+
+            // Tentar Firebase
+            if (firebaseInitialized) {
+                try {
+                    const db = firebase.database();
+                    await db.ref('reversalog/dados').set(dados);
+                    console.log('✅ Dados salvos no Firebase (PaletCD)');
+                } catch (error) {
+                    console.warn('⚠️ Firebase falhou, tentando GitHub...', error);
+                    salvarGitHub(dados);
+                }
+            } else {
+                salvarGitHub(dados);
+            }
+
+            // Sempre salvar em localStorage como fallback
+            localStorage.setItem('reversalog_retornos', JSON.stringify(retornosHistorico));
+            localStorage.setItem('reversalog_triagens', JSON.stringify(triagensHistorico));
+            localStorage.setItem('reversalog_saidas', JSON.stringify(saidasHistorico));
+            localStorage.setItem('reversalog_retornos_guardados', JSON.stringify(retornosGuardados));
+        }
+
+        // Salvar em GitHub (via webhook ou commit automático)
+        async function salvarGitHub(dados) {
+            try {
+                // Endpoint para salvar dados no GitHub
+                // Requer configuração de GitHub Actions ou webhook
+                const payload = {
+                    timestamp: new Date().toISOString(),
+                    dados: dados,
+                    usuario: 'Marcelo Nepomuceno'
+                };
+                
+                // POST para webhook do GitHub (se existir)
+                // await fetch('GITHUB_WEBHOOK_URL', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(payload)
+                // });
+                
+                console.log('💾 Dados disponíveis para sincronizar com GitHub:', payload);
+            } catch (error) {
+                console.warn('⚠️ GitHub também falhou, usando localStorage apenas');
+            }
+        }
+
+        // Carregar dados do Firebase/GitHub/localStorage
+        async function carregarDados() {
+            let dados = null;
+
+            // Tentar Firebase primeiro
+            if (firebaseInitialized) {
+                try {
+                    const db = firebase.database();
+                    const snapshot = await db.ref('reversalog/dados').once('value');
+                    dados = snapshot.val();
+                    if (dados) {
+                        console.log('✅ Dados carregados do Firebase (PaletCD)');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Firebase falhou, carregando do localStorage...', error);
+                }
+            }
+
+            // Se Firebase falhar, carregar do localStorage
+            if (!dados) {
+                dados = {
+                    retornos: JSON.parse(localStorage.getItem('reversalog_retornos')) || [],
+                    triagens: JSON.parse(localStorage.getItem('reversalog_triagens')) || [],
+                    saidas: JSON.parse(localStorage.getItem('reversalog_saidas')) || [],
+                    retornosGuardados: JSON.parse(localStorage.getItem('reversalog_retornos_guardados')) || []
+                };
+                console.log('✅ Dados carregados do localStorage (fallback)');
+            }
+
+            // Atribuir aos arrays globais
+            retornosHistorico = dados.retornos || [];
+            triagensHistorico = dados.triagens || [];
+            saidasHistorico = dados.saidas || [];
+            retornosGuardados = dados.retornosGuardados || [];
+        }
+
+        // ===== INTEGRAÇÃO PALETCD =====
+        // Sincronizar paletes com PaletCD automaticamente
+        async function sincronizarComPaletCD(retorno) {
+            if (!firebaseInitialized) {
+                console.warn('⚠️ Firebase não disponível para sincronização com PaletCD');
+                return;
+            }
+
+            try {
+                const db = firebase.database();
+                
+                // Extrair materiais de palete/gaiola do retorno
+                const paletesGaiola = retorno.materiais.filter(m => 
+                    m.modelo.includes('PALETE') || m.modelo.includes('GAIOLA') || m.modelo.includes('EURO') || m.modelo.includes('CHEP')
+                );
+
+                if (paletesGaiola.length === 0) {
+                    console.log('ℹ️ Nenhum palete/gaiola neste retorno');
+                    return;
+                }
+
+                // Criar movimento no PaletCD
+                const movimentoPaletCD = {
+                    id: `REV-${retorno.id}`,
+                    tipo: 'Retorno de Loja',
+                    loja: retorno.loja,
+                    nf: retorno.nf,
+                    operador: retorno.operador,
+                    data: retorno.data,
+                    materiais: paletesGaiola,
+                    timestamp: new Date().toISOString(),
+                    origem: 'ReversaLog'
+                };
+
+                // Salvar no Firebase (compartilhado com PaletCD)
+                await db.ref(`paletcd/movimentos/${movimentoPaletCD.id}`).set(movimentoPaletCD);
+                
+                console.log('✅ Movimento criado no PaletCD:', movimentoPaletCD.id);
+            } catch (error) {
+                console.warn('⚠️ Erro ao sincronizar com PaletCD:', error);
+            }
+        }
+
+        // ===== CARREGAR DADOS AO ABRIR =====
+        window.addEventListener('load', async function() {
+            // Inicializar dados do sistema (90 lojas, 42 colaboradores, 13 produtos)
+            inicializarDadosSistema();
+            inicializarDataLists();
+            
+            // Carregar dados persistidos
+            await carregarDados();
+            atualizarOpcoesTriagem();
+            atualizarTabelas();
+            
+            console.log('✅ ReversaLog inicializado');
+        });
+
     </script>
 </body>
 </html>
