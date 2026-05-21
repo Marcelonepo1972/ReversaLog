@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Logística Reversa - ReversaLog</title>
+    
+    <!-- Dados do Sistema (90 lojas, 42 colaboradores, 13 produtos) -->
+    <script src="dados.js"></script>
+    
+    <!-- Firebase (Realtime Database) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+    
+    <!-- XLSX (Excel Export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF7A00;
+            --primary-dark: #E66E00;
+            --secondary: #1a1a1a;
+            --accent: #00D4FF;
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --surface-alt: #252525;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border: #333333;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --danger: #f44336;
+            --grid: 8px;
+        }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: var(--grid);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--surface-alt) 100%);
+            border-bottom: 3px solid var(--primary);
+            padding: calc(var(--grid) * 2) var(--grid);
+            margin-bottom: calc(var(--grid) * 2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(255, 122, 0, 0.15);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--grid) * 2);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--grid);
+            margin-bottom: calc(var(--grid) * 2);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: calc(var(--grid) * 1.5) calc(var(--grid) * 2);
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'Courier Prime', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+            box-shadow: 0 0 16px var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .layout-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: calc(var(--grid) * 2);
+            margin-bottom: calc(var(--grid) * 2);
+        }
+
+        @media (max-width: 1200px) {
+            .layout-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            padding: calc(var(--grid) * 2);
+            border-radius: 4px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: calc(var(--grid) * 1.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: calc(var(--grid) * 1.5);
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: var(--grid);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: calc(var(--grid) * 1.2) var(--grid);
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Courier Prime', monospace;
+            font-size: 13px;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(255, 122, 0, 0.2);
+            background: var(--surface-alt);
+        }
+
+        input[readonly] {
+            background: rgba(255, 122, 0, 0.05);
+            border-color: var(--primary);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--grid);
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--grid);
+        }
+
+        .btn {
+            padding: calc(var(--grid) * 1.2) calc(var(--grid) * 2);
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier Prime', monospace;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--grid);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 8px 24px rgba(255, 122, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--surface-alt);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+            border: 1px solid #f44336;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .btn-danger:hover {
+            background: rgba(244, 67, 54, 0.2);
+        }
+
+        .btn-small {
+            padding: calc(var(--grid) * 0.8) var(--grid);
+            font-size: 11px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: var(--grid);
+            margin-top: calc(var(--grid) * 2);
+            flex-wrap: wrap;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        thead {
+            background: rgba(255, 122, 0, 0.1);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        th {
+            padding: calc(var(--grid) * 1.5) var(--grid);
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        td {
+            padding: var(--grid) calc(var(--grid) * 1.2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pendente {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid #FFC107;
+        }
+
+        .status-triado {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+        }
+
+        .status-finalizado {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00D4FF;
+            border: 1px solid #00D4FF;
+        }
+
+        .divergencia-positiva {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .divergencia-negativa {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: calc(var(--grid) * 1.5);
+            border-left: 4px solid;
+            border-radius: 3px;
+            margin-bottom: calc(var(--grid) * 2);
+            font-size: 13px;
+        }
+
+        .alert-info {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: #00D4FF;
+            color: #00D4FF;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--grid);
+            margin-bottom: calc(var(--grid) * 2);
+        }
+
+        .stat-card {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            padding: calc(var(--grid) * 1.5);
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: var(--grid) 0;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            margin-top: calc(var(--grid) * 4);
+            padding: var(--grid) 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">⚙ REVERSA</div>
+            <div class="user-info">
+                <div>Usuário: <strong>OPERADOR_01</strong></div>
+                <div>Perfil: <strong>OPERADOR</strong></div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('retorno')">
+                📦 Retorno de Materiais
+            </button>
+            <button class="tab-btn" onclick="switchTab('triagem')">
+                📋 Triagem
+            </button>
+            <button class="tab-btn" onclick="switchTab('saida')">
+                🚚 Saída de Fornecedores
+            </button>
+            <button class="tab-btn" onclick="switchTab('historico')">
+                📊 Histórico
+            </button>
+        </div>
+
+        <!-- TAB 1: RETORNO DE MATERIAIS -->
+        <div id="retorno" class="tab-content active">
+            <div class="layout-2col">
+                <div class="card">
+                    <div class="card-title">➕ Novo Retorno</div>
+                    
+                    <div class="form-group">
+                        <label>Data Recebimento *</label>
+                        <input type="date" id="ret_data" value="2026-05-20">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Loja *</label>
+                        <input type="text" list="ret_loja_list" id="ret_loja" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                            <datalist id="ret_loja_list">
+                            <option value="">-- Selecione --</option>
+                            <option value="CAROLINA" data-id="1">CAROLINA</option>
+                            <option value="PONTE PRETA" data-id="2">PONTE PRETA</option>
+                            <option value="BONFIM" data-id="3">BONFIM</option>
+                            <option value="AMOREIRAS" data-id="5">AMOREIRAS</option>
+                            <option value="AMERICANA" data-id="6">AMERICANA</option>
+                            <option value="TATUAPÉ" data-id="9">TATUAPÉ</option>
+                            <option value="SOROCABA 1" data-id="10">SOROCABA 1</option>
+                            <option value="BUTANTA" data-id="11">BUTANTA</option>
+                            <option value="IBITIRAMA" data-id="12">IBITIRAMA</option>
+                            <option value="MOEMA" data-id="13">MOEMA</option>
+                            <option value="PENHA" data-id="14">PENHA</option>
+                            <option value="SANTANA PUJOL" data-id="15">SANTANA PUJOL</option>
+                            <option value="THE MALL" data-id="17">THE MALL</option>
+                            <option value="MORUMBI" data-id="19">MORUMBI</option>
+                            <option value="CENTRO" data-id="21">CENTRO</option>
+                            <option value="CAMBUÍ" data-id="23">CAMBUÍ</option>
+                            <option value="SANTANA ATALIBA" data-id="24">SANTANA ATALIBA</option>
+                            <option value="SANTANA TOLLE" data-id="25">SANTANA TOLLE</option>
+                            <option value="SOROCABA 2" data-id="26">SOROCABA 2</option>
+                            <option value="MOOCA" data-id="29">MOOCA</option>
+                            <option value="PIRACICABA" data-id="30">PIRACICABA</option>
+                            <option value="SOUSAS" data-id="31">SOUSAS</option>
+                            <option value="VILA MARIANA" data-id="32">VILA MARIANA</option>
+                            <option value="GALLERIA" data-id="33">GALLERIA</option>
+                            <option value="ANÁLIA FRANCO" data-id="34">ANÁLIA FRANCO</option>
+                            <option value="SÃO JOSÉ DOS CAMPOS" data-id="35">SÃO JOSÉ DOS CAMPOS</option>
+                            <option value="ANGELICA" data-id="36">ANGELICA</option>
+                            <option value="TEODORO SAMPAIO" data-id="37">TEODORO SAMPAIO</option>
+                            <option value="RIBEIRÃO PRETO" data-id="38">RIBEIRÃO PRETO</option>
+                            <option value="INTERLAGOS" data-id="39">INTERLAGOS</option>
+                            <option value="MARKET PLACE" data-id="40">MARKET PLACE</option>
+                            <option value="LEOPOLDINA" data-id="41">LEOPOLDINA</option>
+                            <option value="SANTO ANDRÉ" data-id="42">SANTO ANDRÉ</option>
+                            <option value="PERDIZES" data-id="43">PERDIZES</option>
+                            <option value="306 Nort" data-id="44">306 Nort</option>
+                            <option value="Colorad" data-id="45">Colorad</option>
+                            <option value="302 Sud" data-id="46">302 Sud</option>
+                            <option value="QI09 LA" data-id="47">QI09 LA</option>
+                            <option value="212 Sul" data-id="48">212 Sul</option>
+                            <option value="Castanh" data-id="49">Castanh</option>
+                            <option value="D Bosco" data-id="50">D Bosco</option>
+                            <option value="ARACAURIAS" data-id="51">ARACAURIAS</option>
+                            <option value="209 NOR" data-id="52">209 NOR</option>
+                            <option value="Flamboy" data-id="53">Flamboy</option>
+                            <option value="T63" data-id="54">T63</option>
+                            <option value="CAMPO BELO" data-id="55">CAMPO BELO</option>
+                            <option value="VILA MARIANA 2" data-id="135">VILA MARIANA 2</option>
+                            <option value="JUNDIAI" data-id="57">JUNDIAI</option>
+                            <option value="VictPires" data-id="58">VictPires</option>
+                            <option value="Asa Sul" data-id="59">Asa Sul</option>
+                            <option value="ShpIgutDF" data-id="61">ShpIgutDF</option>
+                            <option value="Pira Way" data-id="62">Pira Way</option>
+                            <option value="SHOP JUNDIAI" data-id="63">SHOP JUNDIAI</option>
+                            <option value="ALPHAVILLE BARUERI" data-id="64">ALPHAVILLE BARUERI</option>
+                            <option value="RIBEIRÃO PRETO 2" data-id="65">RIBEIRÃO PRETO 2</option>
+                            <option value="SÃO BERNARDO" data-id="67">SÃO BERNARDO</option>
+                            <option value="ALPHAVILLE" data-id="69">ALPHAVILLE</option>
+                            <option value="APUCARANA" data-id="71">APUCARANA</option>
+                            <option value="SHOPPING TATUAPÉ" data-id="72">SHOPPING TATUAPÉ</option>
+                            <option value="CAMBUI 2" data-id="73">CAMBUI 2</option>
+                            <option value="ITAIM BIBI" data-id="74">ITAIM BIBI</option>
+                            <option value="NOVA CAMPINAS" data-id="75">NOVA CAMPINAS</option>
+                            <option value="SANTOS" data-id="76">SANTOS</option>
+                            <option value="SOROCABA 3" data-id="79">SOROCABA 3</option>
+                            <option value="ITU" data-id="80">ITU</option>
+                            <option value="PAMPLONA" data-id="81">PAMPLONA</option>
+                            <option value="SÃO JOSÉ DO RIO PRETO" data-id="86">SÃO JOSÉ DO RIO PRETO</option>
+                            <option value="ITATIBA" data-id="87">ITATIBA</option>
+                            <option value="GRANJA VIANA" data-id="88">GRANJA VIANA</option>
+                            <option value="CD 97" data-id="97">CD 97</option>
+                            <option value="CD 100" data-id="100">CD 100</option>
+                            <option value="INDAIATUBA" data-id="104">INDAIATUBA</option>
+                            <option value="AMERICANA 2" data-id="107">AMERICANA 2</option>
+                            <option value="LIMEIRA" data-id="108">LIMEIRA</option>
+                            <option value="ARBORAIS" data-id="121">ARBORAIS</option>
+                            <option value="BAURU" data-id="122">BAURU</option>
+                            <option value="NOVA CANTAREIRA" data-id="123">NOVA CANTAREIRA</option>
+                            <option value="CD BAHIA" data-id="124">CD BAHIA</option>
+                            <option value="CD SÃO MIGUEL" data-id="125">CD SÃO MIGUEL</option>
+                            <option value="FRANCA" data-id="127">FRANCA</option>
+                            <option value="SÃO MATEUS" data-id="130">SÃO MATEUS</option>
+                            <option value="203 ASA SUL" data-id="131">203 ASA SUL</option>
+                            <option value="406 ASA SUL" data-id="132">406 ASA SUL</option>
+                            <option value="HOLAMBRA" data-id="133">HOLAMBRA</option>
+                            <option value="DAMHA" data-id="134">DAMHA</option>
+                            <option value="CAIXARIA" data-id="94">CAIXARIA</option>
+                            <option value="VILA MASCOTE" data-id="56">VILA MASCOTE</option>
+                            <option value="RESTAURANTE" data-id="92">RESTAURANTE</option>
+                            <option value="SÃO CARLOS" data-id="136">SÃO CARLOS</option>
+                            <option value="ITAIM BIBI 2" data-id="139">ITAIM BIBI 2</option>
+                            </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nota Fiscal *</label>
+                        <input type="text" id="ret_nf" placeholder="Ex: 13003" maxlength="20">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Operador *</label>
+                        <input type="text" list="ret_operador_list" id="ret_operador" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                            <datalist id="ret_operador_list">
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Conferente *</label>
+                        <input type="text" list="ret_conferente_list" id="ret_conferente" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                            <datalist id="ret_conferente_list">
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="ret_obs" placeholder="Observações..."></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="salvarRetorno()">💾 Salvar Retorno</button>
+                        <button class="btn btn-secondary" onclick="limparFormRetorno()">🔄 Limpar</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📊 Volume de Materiais</div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Modelo</th>
+                                    <th>Qtd Física</th>
+                                    <th>Qtd NF</th>
+                                    <th>Divergência</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>PALETE PBR</td>
+                                    <td><input type="number" id="ret_qtd_fis_0" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(0)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_0" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(0)"></td>
+                                    <td style="text-align: center;" id="ret_div_0">-</td>
+                                </tr>
+                                <tr>
+                                    <td>PALETE DESC.</td>
+                                    <td><input type="number" id="ret_qtd_fis_1" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(1)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_1" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(1)"></td>
+                                    <td style="text-align: center;" id="ret_div_1">-</td>
+                                </tr>
+                                <tr>
+                                    <td>GAIOLA MADEIRA</td>
+                                    <td><input type="number" id="ret_qtd_fis_2" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(2)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_2" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(2)"></td>
+                                    <td style="text-align: center;" id="ret_div_2">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CAIXA PLASTICA MODELO P</td>
+                                    <td><input type="number" id="ret_qtd_fis_3" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(3)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_3" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(3)"></td>
+                                    <td style="text-align: center;" id="ret_div_3">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CAIXA PLASTICA MODELO M</td>
+                                    <td><input type="number" id="ret_qtd_fis_4" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(4)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_4" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(4)"></td>
+                                    <td style="text-align: center;" id="ret_div_4">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CAIXA PLASTICA MODELO G</td>
+                                    <td><input type="number" id="ret_qtd_fis_5" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(5)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_5" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(5)"></td>
+                                    <td style="text-align: center;" id="ret_div_5">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CARADORI</td>
+                                    <td><input type="number" id="ret_qtd_fis_6" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(6)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_6" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(6)"></td>
+                                    <td style="text-align: center;" id="ret_div_6">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CX DE FORNECEDOR</td>
+                                    <td><input type="number" id="ret_qtd_fis_7" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(7)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_7" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(7)"></td>
+                                    <td style="text-align: center;" id="ret_div_7">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CESTOS</td>
+                                    <td><input type="number" id="ret_qtd_fis_8" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(8)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_8" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(8)"></td>
+                                    <td style="text-align: center;" id="ret_div_8">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CARRINHO DE FLOR</td>
+                                    <td><input type="number" id="ret_qtd_fis_9" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(9)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_9" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(9)"></td>
+                                    <td style="text-align: center;" id="ret_div_9">-</td>
+                                </tr>
+                                <tr>
+                                    <td>CARRINHO BIMBO</td>
+                                    <td><input type="number" id="ret_qtd_fis_10" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(10)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_10" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(10)"></td>
+                                    <td style="text-align: center;" id="ret_div_10">-</td>
+                                </tr>
+                                <tr>
+                                    <td>EURO</td>
+                                    <td><input type="number" id="ret_qtd_fis_11" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(11)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_11" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(11)"></td>
+                                    <td style="text-align: center;" id="ret_div_11">-</td>
+                                </tr>
+                                <tr>
+                                    <td>EURO CHEP</td>
+                                    <td><input type="number" id="ret_qtd_fis_12" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(12)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_12" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(12)"></td>
+                                    <td style="text-align: center;" id="ret_div_12">-</td>
+                                </tr>
+                                <tr>
+                                    <td>STRETCH</td>
+                                    <td><input type="number" id="ret_qtd_fis_13" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(13)"></td>
+                                    <td><input type="number" id="ret_qtd_nf_13" class="ret_input" min="0" style="width: 60px; padding: 4px;" oninput="calcularDivergencia(13)"></td>
+                                    <td style="text-align: center;" id="ret_div_13">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- LISTA DE RETORNOS (ADICIONADO) -->
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">📋 Histórico de Retornos</div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Loja</th>
+                                    <th>NF</th>
+                                    <th>Operador</th>
+                                    <th>Conferente</th>
+                                    <th style="width: 100px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela_retornos">
+                                <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="triagem" class="tab-content">
+            <div class="layout-2col">
+                <div class="card">
+                    <div class="card-title">🔍 Nova Triagem</div>
+                    
+                    <div class="alert alert-info">
+                        ℹ️ A triagem filtra apenas caixas plásticas (P, M, G, Caradori)
+                    </div>
+
+                    <div class="form-group">
+                        <label>Selecione um Retorno *</label>
+                        <select id="tri_retorno" onchange="autofillTriagem()">
+                            <option value="">-- Selecione um Retorno --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Data Recebimento (Auto)</label>
+                            <input type="date" id="tri_data_rec" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Triagem *</label>
+                            <input type="date" id="tri_data_tri" value="2026-05-20">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Loja (Auto)</label>
+                            <input type="text" id="tri_loja" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Nota Fiscal (Auto)</label>
+                            <input type="text" id="tri_nf" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quantidade (Auto)</label>
+                        <input type="number" id="tri_qtd" readonly>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Operador Triagem *</label>
+                            <input type="text" list="tri_operador_list" id="tri_operador" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                            <datalist id="tri_operador_list">
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Op. Movimentação *</label>
+                            <select id="tri_movimentacao">
+                                <option value="">-- Selecione --</option>
+                                <option value="mov_01">OPERADOR MOVIMENTAÇÃO 1</option>
+                                <option value="mov_02">OPERADOR MOVIMENTAÇÃO 2</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="tri_obs" placeholder="Observações da triagem..."></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="salvarTriagem()">💾 Salvar Triagem</button>
+                        <button class="btn btn-secondary" onclick="limparFormTriagem()">🔄 Limpar</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📈 Triagens Realizadas</div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Hoje</div>
+                            <div class="stat-value">8</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Semana</div>
+                            <div class="stat-value">45</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Mês</div>
+                            <div class="stat-value">184</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data Triagem</th>
+                                    <th>Loja</th>
+                                    <th>NF</th>
+                                    <th>Qtd</th>
+                                    <th>Operador</th>
+                                    <th>Op. Mov</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tri_table_body">
+                                <tr>
+                                    <td>2026-05-20</td>
+                                    <td>Cambuí</td>
+                                    <td>--</td>
+                                    <td>375</td>
+                                    <td>VINICIUS BATISTA</td>
+                                    <td>OP-MOV-01</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-05-20</td>
+                                    <td>Termal</td>
+                                    <td>--</td>
+                                    <td>179</td>
+                                    <td>ANTONIO RODRIGUES</td>
+                                    <td>OP-MOV-01</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-05-19</td>
+                                    <td>Santana Pujol</td>
+                                    <td>--</td>
+                                    <td>231</td>
+                                    <td>JOSE BISPO FERREIRA</td>
+                                    <td>OP-MOV-01</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: SAÍDA DE FORNECEDORES -->
+        <div id="saida" class="tab-content">
+            <div class="layout-2col">
+                <div class="card">
+                    <div class="card-title">📤 Nova Saída</div>
+
+                    <div class="form-group">
+                        <label>Data *</label>
+                        <input type="date" id="sai_data" value="2026-05-20">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nº Controle *</label>
+                        <input type="text" id="sai_controle" placeholder="Ex: VP2024-9KGD14" maxlength="30">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Fornecedor * (Editável)</label>
+                        <input type="text" id="sai_fornecedor" placeholder="Digite o nome do fornecedor">
+                    </div>
+
+                    <div style="border-top: 2px solid var(--border); padding-top: calc(var(--grid) * 1.5); margin-bottom: calc(var(--grid) * 1.5);">
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: var(--grid); text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary);">
+                            ➕ Adicionar Material
+                        </div>
+
+                        <div class="form-group">
+                            <label>Material</label>
+                            <select id="sai_material">
+                                <option value="">-- Selecione --</option>
+                                <option value="stretch">STRETCH</option>
+                                <option value="palete_pbr">PALETE PBR</option>
+                                <option value="palete_chep">PALETE CHEP</option>
+                                <option value="palete_desc">PALETE DESC.</option>
+                                <option value="gaiola">GAIOLA MADEIRA</option>
+                                <option value="carrinho">CARRINHO DE FLOR</option>
+                                <option value="caixa_g">CAIXA PLASTICA MODELO G</option>
+                                <option value="caixa_m">CAIXA PLASTICA MODELO M</option>
+                                <option value="caixa_p">CAIXA PLASTICA MODELO P</option>
+                                <option value="caradori">CARADORI</option>
+                                <option value="cx_fornecedor">CX DE FORNECEDOR</option>
+                                <option value="cestos">CESTOS</option>
+                                <option value="carrinho_bimbo">CARRINHO BIMBO</option>
+                                <option value="euro">EURO</option>
+                                <option value="euro_chep">EURO CHEP</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Qtd Entrada</label>
+                                <input type="number" id="sai_entrada" placeholder="0" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Qtd Saída</label>
+                                <input type="number" id="sai_saida" placeholder="0" min="0">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="width: 100%;" onclick="adicionarMaterial()">➕ Adicionar Material</button>
+                    </div>
+
+                    <div style="margin-bottom: calc(var(--grid) * 1.5);">
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: var(--grid); text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary);">
+                            Materiais Lançados
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Material</th>
+                                        <th>Entrada</th>
+                                        <th>Saída</th>
+                                        <th>Saldo</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sai_materiais_body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>Operador *</label>
+                            <input type="text" list="sai_operador_list" id="sai_operador" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                            <datalist id="sai_operador_list">
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Conferente *</label>
+                            <input type="text" list="sai_conferente_list" id="sai_conferente" placeholder="Digite para filtrar..." style="width: 100%; padding: 8px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 12px;">
+                            <datalist id="sai_conferente_list">
+                            <option value="">-- Selecione --</option>
+                            <option value="ALBERTINO DOS SANTOS PRETO" data-id="01790206">ALBERTINO DOS SANTOS PRETO</option>
+                            <option value="ANTONIO JOSE SILVA DE OLIVEIRA" data-id="02201073">ANTONIO JOSE SILVA DE OLIVEIRA</option>
+                            <option value="CESAR VINICIOS THOMAZ ALVES DOS SANTOS" data-id="02201061">CESAR VINICIOS THOMAZ ALVES DOS SANTOS</option>
+                            <option value="DANIEL RODRIGUES DA SILVA" data-id="02201736">DANIEL RODRIGUES DA SILVA</option>
+                            <option value="DIEGO DE MELO CARDOSO" data-id="02201704">DIEGO DE MELO CARDOSO</option>
+                            <option value="EDILSON REZENDE DE OLIVEIRA" data-id="02200735">EDILSON REZENDE DE OLIVEIRA</option>
+                            <option value="ELIAS POLIDORIO DOS SANTOS" data-id="02200728">ELIAS POLIDORIO DOS SANTOS</option>
+                            <option value="GABRIEL DOS SANTOS SILVA" data-id="02200624">GABRIEL DOS SANTOS SILVA</option>
+                            <option value="GERIVALDO DA SILVA TEIXEIRA" data-id="02200533">GERIVALDO DA SILVA TEIXEIRA</option>
+                            <option value="GILDEVALDO ARAUJO DA CONCEICAO" data-id="01790205">GILDEVALDO ARAUJO DA CONCEICAO</option>
+                            <option value="GUSTAVO FRANQUILINO VICENTE" data-id="02201798">GUSTAVO FRANQUILINO VICENTE</option>
+                            <option value="HOBEDE PINHEIRO SOARES" data-id="03190595">HOBEDE PINHEIRO SOARES</option>
+                            <option value="JERONIMO CASSIMIRO CORREIA" data-id="02201826">JERONIMO CASSIMIRO CORREIA</option>
+                            <option value="JOAO VICTOR DE SOUZA MELO" data-id="02201661">JOAO VICTOR DE SOUZA MELO</option>
+                            <option value="JOAQUIM DE SOUZA PIRES" data-id="02200134">JOAQUIM DE SOUZA PIRES</option>
+                            <option value="JOSE BARBOSA AIRES FILHO" data-id="02200835">JOSE BARBOSA AIRES FILHO</option>
+                            <option value="JOSE BISPO FERREIRA" data-id="01790198">JOSE BISPO FERREIRA</option>
+                            <option value="JOSE CARLOS VERISSIMO BARBOSA" data-id="03190623">JOSE CARLOS VERISSIMO BARBOSA</option>
+                            <option value="KAUE JUVENCIO DA COSTA" data-id="02200742">KAUE JUVENCIO DA COSTA</option>
+                            <option value="KENNEDY FERNANDES DOS SANTOS" data-id="03101049">KENNEDY FERNANDES DOS SANTOS</option>
+                            <option value="LAZARO DO NASCIMENTO SILVA" data-id="03102496">LAZARO DO NASCIMENTO SILVA</option>
+                            <option value="LENIN BENTO DA SILVA" data-id="03102453">LENIN BENTO DA SILVA</option>
+                            <option value="LUIS HENRIQUE RIBEIRO" data-id="02201030">LUIS HENRIQUE RIBEIRO</option>
+                            <option value="LUIZ EDUARDO CAETANO LOPES" data-id="02201609">LUIZ EDUARDO CAETANO LOPES</option>
+                            <option value="MARCOS VINICIUS PEDRO GARCIA" data-id="02200271">MARCOS VINICIUS PEDRO GARCIA</option>
+                            <option value="OSMAR ROMAO CARDOSO" data-id="02200717">OSMAR ROMAO CARDOSO</option>
+                            <option value="PATRIK STEFEN SANTANA" data-id="03101034">PATRIK STEFEN SANTANA</option>
+                            <option value="RAFAEL CARLOS DE JESUS SANTOS" data-id="02201827">RAFAEL CARLOS DE JESUS SANTOS</option>
+                            <option value="ROBERT FIRMINO DE LIMA" data-id="02201384">ROBERT FIRMINO DE LIMA</option>
+                            <option value="RUAN PABLO BENEDITO" data-id="02201829">RUAN PABLO BENEDITO</option>
+                            <option value="SERGIO FIGUEIREDO DOS SANTOS" data-id="03101021">SERGIO FIGUEIREDO DOS SANTOS</option>
+                            <option value="THIAGO CRISTIANO DE OLIVEIRA" data-id="03101022">THIAGO CRISTIANO DE OLIVEIRA</option>
+                            <option value="THIAGO LUIS DE ASSIS" data-id="02201310">THIAGO LUIS DE ASSIS</option>
+                            <option value="TIAGO REIS DA SILVA" data-id="03101491">TIAGO REIS DA SILVA</option>
+                            <option value="VALMIR STOCCO MARTINS" data-id="03190611">VALMIR STOCCO MARTINS</option>
+                            <option value="WELLINGTON DE SOUZA FRANCISCO" data-id="02201729">WELLINGTON DE SOUZA FRANCISCO</option>
+                            <option value="WILLIAM MEDINA DOS SANTOS" data-id="03101642">WILLIAM MEDINA DOS SANTOS</option>
+                            <option value="JOSUÉ VICENTE JUNIOR" data-id="02201911">JOSUÉ VICENTE JUNIOR</option>
+                            <option value="MARISTELLA PEREIRA" data-id="02201910">MARISTELLA PEREIRA</option>
+                            <option value="KAUAN GABRIEL DOS SANTOS" data-id="02201905">KAUAN GABRIEL DOS SANTOS</option>
+                            <option value="FAGNER JUNIO DOS SANTOS" data-id="02201898">FAGNER JUNIO DOS SANTOS</option>
+                            <option value="FLAVIO FERNANDES DOS SANTOS" data-id="03101008">FLAVIO FERNANDES DOS SANTOS</option>
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Op. Movimentação *</label>
+                            <select id="sai_movimentacao">
+                                <option value="">-- Selecione --</option>
+                                <option value="mov_01">MOV 1</option>
+                                <option value="mov_02">MOV 2</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="sai_obs" placeholder="Observações..."></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="salvarSaidaCompleta()">💾 Salvar Saída Completa</button>
+                        <button class="btn btn-secondary" onclick="limparFormSaida()">🔄 Limpar</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📦 Saídas Recentes</div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Hoje</div>
+                            <div class="stat-value">12</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Saldo Pos</div>
+                            <div class="stat-value" style="color: #4CAF50;">5</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Saldo Neg</div>
+                            <div class="stat-value" style="color: #f44336;">2</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Controle</th>
+                                    <th>Fornecedor</th>
+                                    <th>Material</th>
+                                    <th>Entrada</th>
+                                    <th>Saída</th>
+                                    <th>Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sai_table_body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TAB 4: HISTÓRICO -->
+        <div id="historico" class="tab-content">
+            <div class="card">
+                <div class="card-title">📊 Histórico Completo</div>
+                
+                <div style="margin-bottom: 20px; padding: 15px; background: var(--surface-alt); border-radius: 4px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <input type="date" id="filtro_data_inicio" style="padding: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; max-width: 150px;">
+                    <span style="color: var(--text-secondary);">até</span>
+                    <input type="date" id="filtro_data_fim" style="padding: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; max-width: 150px;">
+                    <button class="btn btn-primary" onclick="aplicarFiltroData()">🔍 Filtrar</button>
+                    <button class="btn btn-secondary" onclick="limparFiltroData()">✕ Limpar</button>
+                    <button class="btn btn-success" onclick="exportarTudo()" style="background: #28a745;">📥 Exportar</button>
+                    <button class="btn btn-danger" onclick="resetarTudo()" style="background: #cc0000;">⚠️ RESETAR</button>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">📋 Triagens</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Loja</th>
+                                    <th>NF</th>
+                                    <th>Volume</th>
+                                    <th>Operador</th>
+                                    <th style="width: 80px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela_triagens">
+                                <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">🚚 Saídas</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Controle</th>
+                                    <th>Fornecedor</th>
+                                    <th>Operador</th>
+                                    <th style="width: 80px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela_saidas">
+                                <tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div style="margin-bottom: 8px;">Sistema de Logística Reversa v1.0 | Desenvolvido para operações ágeis e precisas</div>
+            <div style="color: #666;">© 2026 | Sumaré / SP</div>
+        </footer>
+    </div>
+
+    <script>
+        // ===== INICIALIZAR DADOS DO SISTEMA =====
+        // Carrega automaticamente dos dados em dados.js
+        
+        // Variáveis globais de dados
+        let LOJAS = [];
+        let PRODUTOS = [];
+        let COLABORADORES = [];
+
+        // Função para inicializar dropdowns com dados reais
+        function inicializarDadosSistema() {
+            // Verificar se REVERSALOG_DATA foi carregado
+            if (typeof REVERSALOG_DATA === 'undefined') {
+                console.error('❌ REVERSALOG_DATA não carregado! Verifique se dados.js está presente.');
+                return false;
+            }
+
+            // Atribuir aos arrays globais
+            LOJAS = REVERSALOG_DATA.lojas || [];
+            PRODUTOS = REVERSALOG_DATA.produtos || [];
+            COLABORADORES = REVERSALOG_DATA.colaboradores || [];
+
+            console.log(`✅ Sistema iniciado com ${LOJAS.length} lojas, ${COLABORADORES.length} colaboradores, ${PRODUTOS.length} produtos`);
+
+            // Popular dropdowns de lojas
+            const selectLojas = document.getElementById('ret_loja');
+            if (selectLojas) {
+                selectLojas.innerHTML = '<option value="">-- Selecione uma Loja --</option>';
+                LOJAS.forEach(loja => {
+                    const opt = document.createElement('option');
+                    opt.value = loja.nome;
+                    opt.dataset.codigo = loja.codigo;
+                    opt.textContent = `${loja.nome} (${loja.codigo})`;
+                    selectLojas.appendChild(opt);
+                });
+            }
+
+            // Popular dropdowns de colaboradores
+            const dropdownsColab = [
+                'ret_operador', 'ret_conferente',
+                'tri_operador', 'sai_operador', 'sai_conferente'
+            ];
+
+            dropdownsColab.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">-- Selecione --</option>';
+                    COLABORADORES.forEach(colab => {
+                        const opt = document.createElement('option');
+                        opt.value = colab.nome;
+                        opt.title = `${colab.cargo} - ${colab.turno}`;
+                        opt.textContent = colab.nome;
+                        select.appendChild(opt);
+                    });
+                }
+            });
+
+            // Atualizar código da loja quando selecionada
+            if (selectLojas) {
+                selectLojas.addEventListener('change', function() {
+                    const loja = LOJAS.find(l => l.nome === this.value);
+                    const codigoInput = document.getElementById('ret_codigo_loja');
+                    if (codigoInput && loja) {
+                        codigoInput.value = loja.codigo;
+                    }
+                });
+            }
+
+            return true;
+        }
+
+        // Função para preencher datalists com dados
+        function inicializarDataLists() {
+            // Datalist para operadores (se existir)
+            const operadorDatalist = document.getElementById('ret_operador_list');
+            if (operadorDatalist) {
+                operadorDatalist.innerHTML = '';
+                COLABORADORES.forEach(colab => {
+                    const opt = document.createElement('option');
+                    opt.value = colab.nome;
+                    opt.dataset.id = colab.matricula;
+                    operadorDatalist.appendChild(opt);
+                });
+            }
+        }
+
+        // Array global para armazenar materiais da saída
+        let materiaisSaida = [];
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function calcularDivergencia(index) {
+            const qtd_fis = parseFloat(document.getElementById('ret_qtd_fis_' + index).value) || 0;
+            const qtd_nf = parseFloat(document.getElementById('ret_qtd_nf_' + index).value) || 0;
+            const divergencia = qtd_nf - qtd_fis;
+            document.getElementById('ret_div_' + index).textContent = divergencia;
+        }
+
+        // RETORNO
+        function limparFormRetorno() {
+            document.getElementById('ret_data').value = '2026-05-20';
+            document.getElementById('ret_loja').value = '';
+            document.getElementById('ret_nf').value = '';
+            document.getElementById('ret_operador').value = '';
+            document.getElementById('ret_conferente').value = '';
+            document.getElementById('ret_obs').value = '';
+        }
+
+        function salvarRetorno() {
+            const loja = document.getElementById('ret_loja').value;
+            const nf = document.getElementById('ret_nf').value;
+            const operador = document.getElementById('ret_operador').value;
+            
+            if (!loja || !nf || !operador) {
+                alert('Preencha os campos obrigatórios!');
+                return;
+            }
+            
+            const editIdx = document.getElementById('ret_data').dataset.editIdx;
+            
+            if (editIdx !== undefined) {
+                // EDIÇÃO: Atualizar registro existente
+                retornosHistorico[editIdx] = {
+                    id: retornosHistorico[editIdx].id,
+                    data: document.getElementById('ret_data').value,
+                    loja: loja,
+                    nf: nf,
+                    operador: operador,
+                    conferente: document.getElementById('ret_conferente').value || ''
+                };
+                alert('✅ Retorno atualizado com sucesso!\nNF: ' + nf + ' | Loja: ' + loja);
+                delete document.getElementById('ret_data').dataset.editIdx;
+            } else {
+                // NOVO: Criar novo registro
+                const novoRetorno = {
+                    id: Date.now(),
+                    data: document.getElementById('ret_data').value,
+                    loja: loja,
+                    nf: nf,
+                    operador: operador,
+                    conferente: document.getElementById('ret_conferente').value || ''
+                };
+                retornosHistorico.push(novoRetorno);
+                alert('✅ Retorno salvo com sucesso!\nNF: ' + nf + ' | Loja: ' + loja);
+            }
+            
+            salvarDados();
+            atualizarTabelas();
+            atualizarOpcoesTriagem();
+            limparFormRetorno();
+        }
+
+        // TRIAGEM
+        function autofillTriagem() {
+            const retornoId = document.getElementById('tri_retorno').value;
+            if (!retornoId) {
+                document.getElementById('tri_data_rec').value = '';
+                document.getElementById('tri_loja').value = '';
+                document.getElementById('tri_nf').value = '';
+                return;
+            }
+            
+            // Buscar dados do retorno no array retornosGuardados
+            const retorno = retornosGuardados.find(r => r.id == retornoId);
+            if (retorno) {
+                document.getElementById('tri_data_rec').value = retorno.data || '';
+                document.getElementById('tri_loja').value = retorno.loja || '';
+                document.getElementById('tri_nf').value = retorno.nf || '';
+            }
+        }
+
+        function limparFormTriagem() {
+            document.getElementById('tri_retorno').value = '';
+            document.getElementById('tri_data_rec').value = '';
+            document.getElementById('tri_data_tri').value = '2026-05-20';
+            document.getElementById('tri_loja').value = '';
+            document.getElementById('tri_nf').value = '';
+            document.getElementById('tri_qtd').value = '';
+            document.getElementById('tri_operador').value = '';
+            document.getElementById('tri_movimentacao').value = '';
+            document.getElementById('tri_obs').value = '';
+        }
+
+        function salvarTriagem() {
+            const retorno = document.getElementById('tri_retorno').value;
+            const operador = document.getElementById('tri_operador').value;
+            
+            if (!retorno || !operador) {
+                alert('Preencha os campos obrigatórios!');
+                return;
+            }
+            
+            alert('✅ Triagem registrada com sucesso!');
+            limparFormTriagem();
+        }
+
+        // SAÍDA: Adicionar Material Dinâmico
+        function adicionarMaterial() {
+            const material = document.getElementById('sai_material').value;
+            const entrada = parseFloat(document.getElementById('sai_entrada').value) || 0;
+            const saida = parseFloat(document.getElementById('sai_saida').value) || 0;
+
+            if (!material) {
+                alert('Selecione um material!');
+                return;
+            }
+
+            if (entrada === 0 && saida === 0) {
+                alert('Preencha Qtd Entrada OU Qtd Saída!');
+                return;
+            }
+
+            const saldo = entrada - saida;
+            const materialLabel = document.getElementById('sai_material').options[document.getElementById('sai_material').selectedIndex].text;
+
+            materiaisSaida.push({
+                material: material,
+                materialLabel: materialLabel,
+                entrada: entrada,
+                saida: saida,
+                saldo: saldo,
+                id: Date.now()
+            });
+
+            renderizarMateriais();
+            document.getElementById('sai_material').value = '';
+            document.getElementById('sai_entrada').value = '';
+            document.getElementById('sai_saida').value = '';
+        }
+
+        function renderizarMateriais() {
+            const tbody = document.getElementById('sai_materiais_body');
+            tbody.innerHTML = '';
+
+            materiaisSaida.forEach(m => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${m.materialLabel}</td>
+                    <td>${m.entrada || '--'}</td>
+                    <td>${m.saida || '--'}</td>
+                    <td>${m.saldo}</td>
+                    <td><button class="btn btn-danger btn-small" onclick="removerMaterial(${m.id})">✕ Remover</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function removerMaterial(id) {
+            materiaisSaida = materiaisSaida.filter(m => m.id !== id);
+            renderizarMateriais();
+        }
+
+        function salvarSaidaCompleta() {
+            const controle = document.getElementById('sai_controle').value;
+            const fornecedor = document.getElementById('sai_fornecedor').value;
+            const operador = document.getElementById('sai_operador').value;
+
+            if (!controle || !fornecedor || !operador) {
+                alert('Preencha: Controle, Fornecedor e Operador!');
+                return;
+            }
+
+            if (materiaisSaida.length === 0) {
+                alert('Adicione pelo menos um material!');
+                return;
+            }
+
+            alert('✅ Saída completa registrada com sucesso!\nControle: ' + controle + '\nMateriais: ' + materiaisSaida.length);
+            limparFormSaida();
+        }
+
+        function limparFormSaida() {
+            document.getElementById('sai_data').value = '2026-05-20';
+            document.getElementById('sai_controle').value = '';
+            document.getElementById('sai_fornecedor').value = '';
+            document.getElementById('sai_material').value = '';
+            document.getElementById('sai_entrada').value = '';
+            document.getElementById('sai_saida').value = '';
+            document.getElementById('sai_operador').value = '';
+            document.getElementById('sai_conferente').value = '';
+            document.getElementById('sai_movimentacao').value = '';
+            document.getElementById('sai_obs').value = '';
+            materiaisSaida = [];
+            renderizarMateriais();
+        }
+
+        // ===== ARRAYS DE HISTÓRICO (GLOBAIS) =====
+        let retornosHistorico = JSON.parse(localStorage.getItem('retornos_historico')) || [];
+        let triagensHistorico = JSON.parse(localStorage.getItem('triagens_historico')) || [];
+        let saidasHistorico = JSON.parse(localStorage.getItem('saidas_historico')) || [];
+        let retornosGuardados = JSON.parse(localStorage.getItem('retornos_guardados')) || [];
+
+        // ===== SALVAR RETORNO (SOBRESCREVER FUNÇÃO EXISTENTE) =====
+        const salvarRetornoOriginal = window.salvarRetorno;
+        window.salvarRetorno = function() {
+            salvarRetornoOriginal();
+            const loja = document.getElementById('ret_loja').value;
+            const nf = document.getElementById('ret_nf').value;
+            const operador = document.getElementById('ret_operador').value;
+            
+            if (loja && nf && operador) {
+                const retorno = {
+                    id: Date.now(),
+                    data: new Date().toISOString().split('T')[0],
+                    loja: loja,
+                    nf: nf,
+                    operador: operador,
+                    conferente: document.getElementById('ret_conferente').value || ''
+                };
+                
+                retornosGuardados.push(retorno);
+                retornosHistorico.push(retorno);
+                salvarDados(); // Persistir em Firebase → GitHub → localStorage
+                sincronizarComPaletCD(retorno); // Sincronizar paletes com PaletCD
+                atualizarOpcoesTriagem();
+                atualizarTabelas();
+            }
+        };
+
+        // ===== ATUALIZAR OPÇÕES TRIAGEM =====
+        function atualizarOpcoesTriagem() {
+            const select = document.getElementById('tri_retorno');
+            select.innerHTML = '<option value="">-- Selecione um Retorno --</option>';
+            retornosGuardados.forEach(ret => {
+                const option = document.createElement('option');
+                option.value = ret.id;
+                option.textContent = `${ret.nf} - ${ret.loja}`;
+                select.appendChild(option);
+            });
+        }
+
+        // ===== AUTOFILL TRIAGEM =====
+        function autofillTriagem() {
+            const retornoId = document.getElementById('tri_retorno').value;
+            const retorno = retornosGuardados.find(r => r.id == retornoId);
+            
+            if (retorno) {
+                document.getElementById('tri_data_rec').value = retorno.data;
+                document.getElementById('tri_loja').value = retorno.loja;
+                document.getElementById('tri_nf').value = retorno.nf;
+            }
+        }
+
+        // ===== SALVAR TRIAGEM (SOBRESCREVER) =====
+        const salvarTriagemOriginal = window.salvarTriagem;
+        window.salvarTriagem = function() {
+            salvarTriagemOriginal();
+            const retornoId = document.getElementById('tri_retorno').value;
+            if (retornoId) {
+                const triagem = {
+                    id: Date.now(),
+                    data: new Date().toISOString().split('T')[0],
+                    loja: document.getElementById('tri_loja').value,
+                    nf: document.getElementById('tri_nf').value,
+                    volume: document.getElementById('tri_qtd').value,
+                    operador: document.getElementById('tri_operador').value
+                };
+                
+                triagensHistorico.push(triagem);
+                salvarDados(); // Persistir em Firebase → GitHub → localStorage
+                atualizarTabelas();
+            }
+        };
+
+        // ===== SALVAR SAÍDA (SOBRESCREVER) =====
+        const salvarSaidaOriginal = window.salvarSaidaCompleta;
+        window.salvarSaidaCompleta = function() {
+            salvarSaidaOriginal();
+            const controle = document.getElementById('sai_controle').value;
+            const fornecedor = document.getElementById('sai_fornecedor').value;
+            const operador = document.getElementById('sai_operador').value;
+            
+            if (controle && fornecedor && operador) {
+                const saida = {
+                    id: Date.now(),
+                    data: new Date().toISOString().split('T')[0],
+                    controle: controle,
+                    fornecedor: fornecedor,
+                    operador: operador
+                };
+                
+                saidasHistorico.push(saida);
+                salvarDados(); // Persistir em Firebase → GitHub → localStorage
+                atualizarTabelas();
+            }
+        };
+
+        // ===== ATUALIZAR TABELAS =====
+        function atualizarTabelas() {
+            atualizarTabelaRetornos(retornosHistorico);
+            atualizarTabelaTriagens(triagensHistorico);
+            atualizarTabelaSaidas(saidasHistorico);
+        }
+
+        function atualizarTabelaRetornos(dados) {
+            const tbody = document.getElementById('tabela_retornos');
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>';
+                return;
+            }
+            tbody.innerHTML = dados.map((item, idx) => `
+                <tr>
+                    <td>${item.data}</td>
+                    <td>${item.loja}</td>
+                    <td>${item.nf}</td>
+                    <td>${item.operador}</td>
+                    <td>${item.conferente}</td>
+                    <td style="width: 100px;">
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn btn-success btn-small" onclick="editarRetorno(${idx})" title="Editar">✏️</button>
+                            <button class="btn btn-danger btn-small" onclick="excluirRetorno(${idx})" title="Excluir">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function atualizarTabelaTriagens(dados) {
+            const tbody = document.getElementById('tabela_triagens');
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>';
+                return;
+            }
+            tbody.innerHTML = dados.map((item, idx) => `
+                <tr>
+                    <td>${item.data}</td>
+                    <td>${item.loja}</td>
+                    <td>${item.nf}</td>
+                    <td>${item.volume}</td>
+                    <td>${item.operador}</td>
+                    <td><button class="btn btn-danger btn-small" onclick="excluirTriagem(${idx})">🗑️</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function atualizarTabelaSaidas(dados) {
+            const tbody = document.getElementById('tabela_saidas');
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-secondary);">Nenhum registro</td></tr>';
+                return;
+            }
+            tbody.innerHTML = dados.map((item, idx) => `
+                <tr>
+                    <td>${item.data}</td>
+                    <td>${item.controle}</td>
+                    <td>${item.fornecedor}</td>
+                    <td>${item.operador}</td>
+                    <td><button class="btn btn-danger btn-small" onclick="excluirSaida(${idx})">🗑️</button></td>
+                </tr>
+            `).join('');
+        }
+
+        // ===== EDIÇÃO =====
+        function editarRetorno(idx) {
+            const retorno = retornosHistorico[idx];
+            if (!retorno) return;
+            
+            // Preencher formulário com dados
+            document.getElementById('ret_data').value = retorno.data || '';
+            document.getElementById('ret_loja').value = retorno.loja || '';
+            document.getElementById('ret_nf').value = retorno.nf || '';
+            document.getElementById('ret_operador').value = retorno.operador || '';
+            document.getElementById('ret_conferente').value = retorno.conferente || '';
+            
+            // Preencher código da loja
+            const loja = REVERSALOG_DATA.lojas.find(l => l.nome === retorno.loja);
+            if (loja) {
+                document.getElementById('ret_codigo_loja').value = loja.codigo;
+            }
+            
+            // Armazenar índice para saber que está editando
+            document.getElementById('ret_data').dataset.editIdx = idx;
+            
+            // Scroll para o topo do formulário
+            document.getElementById('ret_data').scrollIntoView({ behavior: 'smooth' });
+            
+            // Destaque visual
+            document.getElementById('ret_data').focus();
+        }
+
+        // ===== EXCLUSÃO =====
+        function excluirRetorno(idx) {
+            if (confirm('Tem certeza que deseja excluir?')) {
+                retornosHistorico.splice(idx, 1);
+                salvarDados(); // Persistir
+                atualizarTabelas();
+                atualizarOpcoesTriagem();
+            }
+        }
+
+        function excluirTriagem(idx) {
+            if (confirm('Tem certeza que deseja excluir?')) {
+                triagensHistorico.splice(idx, 1);
+                salvarDados(); // Persistir
+                atualizarTabelas();
+            }
+        }
+
+        function excluirSaida(idx) {
+            if (confirm('Tem certeza que deseja excluir?')) {
+                saidasHistorico.splice(idx, 1);
+                salvarDados(); // Persistir
+                atualizarTabelas();
+            }
+        }
+
+        // ===== FILTRO POR DATA =====
+        function aplicarFiltroData() {
+            const dataInicio = document.getElementById('filtro_data_inicio').value;
+            const dataFim = document.getElementById('filtro_data_fim').value;
+            
+            if (!dataInicio || !dataFim) {
+                alert('Preencha as duas datas!');
+                return;
+            }
+            
+            const retornosFiltrados = retornosHistorico.filter(r => r.data >= dataInicio && r.data <= dataFim);
+            const triagemnsFiltradas = triagensHistorico.filter(t => t.data >= dataInicio && t.data <= dataFim);
+            const saidasFiltradas = saidasHistorico.filter(s => s.data >= dataInicio && s.data <= dataFim);
+            
+            atualizarTabelaRetornos(retornosFiltrados);
+            atualizarTabelaTriagens(triagemnsFiltradas);
+            atualizarTabelaSaidas(saidasFiltradas);
+        }
+
+        function limparFiltroData() {
+            document.getElementById('filtro_data_inicio').value = '';
+            document.getElementById('filtro_data_fim').value = '';
+            atualizarTabelas();
+        }
+
+        // ===== EXPORTAR EXCEL =====
+        function exportarTudo() {
+            if (retornosHistorico.length === 0 && triagensHistorico.length === 0 && saidasHistorico.length === 0) {
+                alert('Nenhum dado para exportar!');
+                return;
+            }
+            
+            const wb = XLSX.utils.book_new();
+            
+            if (retornosHistorico.length > 0) {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(retornosHistorico), 'Retornos');
+            }
+            if (triagensHistorico.length > 0) {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(triagensHistorico), 'Triagens');
+            }
+            if (saidasHistorico.length > 0) {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(saidasHistorico), 'Saídas');
+            }
+            
+            XLSX.writeFile(wb, 'Reversa_' + new Date().toISOString().split('T')[0] + '.xlsx');
+        }
+
+        // ===== RESETAR TUDO =====
+        function resetarTudo() {
+            if (confirm('⚠️ RESETAR TUDO? Esta ação NÃO pode ser desfeita!')) {
+                retornosHistorico = [];
+                triagensHistorico = [];
+                saidasHistorico = [];
+                retornosGuardados = [];
+                
+                salvarDados(); // Limpar em Firebase → GitHub → localStorage
+                
+                document.getElementById('tri_retorno').innerHTML = '<option value="">-- Selecione um Retorno --</option>';
+                atualizarTabelas();
+                
+                alert('✅ TUDO RESETADO!');
+            }
+        }
+
+        // ===== PERSISTÊNCIA: FIREBASE → GITHUB → LOCALSTORAGE =====
+        
+        // Firebase Configuration (PaletCD Shared Database)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9qVsBjf_v59TN8Ayvarts5Q7LXxzlVrQ",
+            authDomain: "paletcd.firebaseapp.com",
+            databaseURL: "https://paletcd-default-rtdb.firebaseio.com",
+            projectId: "paletcd",
+            storageBucket: "paletcd.firebasestorage.app",
+            messagingSenderId: "431517046970",
+            appId: "1:431517046970:web:e03e0ff01e1b898275ca83"
+        };
+
+        let firebaseInitialized = false;
+
+        // Tentar inicializar Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            firebaseInitialized = true;
+            console.log('✅ Firebase inicializado (PaletCD)');
+        } catch (error) {
+            console.warn('⚠️ Firebase não disponível:', error);
+            firebaseInitialized = false;
+        }
+
+        // Salvar em Firebase → GitHub → localStorage
+        async function salvarDados() {
+            const dados = {
+                retornos: retornosHistorico,
+                triagens: triagensHistorico,
+                saidas: saidasHistorico,
+                retornosGuardados: retornosGuardados,
+                timestamp: new Date().toISOString()
+            };
+
+            // Tentar Firebase
+            if (firebaseInitialized) {
+                try {
+                    const db = firebase.database();
+                    await db.ref('reversalog/dados').set(dados);
+                    console.log('✅ Dados salvos no Firebase (PaletCD)');
+                } catch (error) {
+                    console.warn('⚠️ Firebase falhou, tentando GitHub...', error);
+                    salvarGitHub(dados);
+                }
+            } else {
+                salvarGitHub(dados);
+            }
+
+            // Sempre salvar em localStorage como fallback
+            localStorage.setItem('reversalog_retornos', JSON.stringify(retornosHistorico));
+            localStorage.setItem('reversalog_triagens', JSON.stringify(triagensHistorico));
+            localStorage.setItem('reversalog_saidas', JSON.stringify(saidasHistorico));
+            localStorage.setItem('reversalog_retornos_guardados', JSON.stringify(retornosGuardados));
+        }
+
+        // Salvar em GitHub (via webhook ou commit automático)
+        async function salvarGitHub(dados) {
+            try {
+                // Endpoint para salvar dados no GitHub
+                // Requer configuração de GitHub Actions ou webhook
+                const payload = {
+                    timestamp: new Date().toISOString(),
+                    dados: dados,
+                    usuario: 'Marcelo Nepomuceno'
+                };
+                
+                // POST para webhook do GitHub (se existir)
+                // await fetch('GITHUB_WEBHOOK_URL', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(payload)
+                // });
+                
+                console.log('💾 Dados disponíveis para sincronizar com GitHub:', payload);
+            } catch (error) {
+                console.warn('⚠️ GitHub também falhou, usando localStorage apenas');
+            }
+        }
+
+        // Carregar dados do Firebase/GitHub/localStorage
+        async function carregarDados() {
+            let dados = null;
+
+            // Tentar Firebase primeiro
+            if (firebaseInitialized) {
+                try {
+                    const db = firebase.database();
+                    const snapshot = await db.ref('reversalog/dados').once('value');
+                    dados = snapshot.val();
+                    if (dados) {
+                        console.log('✅ Dados carregados do Firebase (PaletCD)');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Firebase falhou, carregando do localStorage...', error);
+                }
+            }
+
+            // Se Firebase falhar, carregar do localStorage
+            if (!dados) {
+                dados = {
+                    retornos: JSON.parse(localStorage.getItem('reversalog_retornos')) || [],
+                    triagens: JSON.parse(localStorage.getItem('reversalog_triagens')) || [],
+                    saidas: JSON.parse(localStorage.getItem('reversalog_saidas')) || [],
+                    retornosGuardados: JSON.parse(localStorage.getItem('reversalog_retornos_guardados')) || []
+                };
+                console.log('✅ Dados carregados do localStorage (fallback)');
+            }
+
+            // Atribuir aos arrays globais
+            retornosHistorico = dados.retornos || [];
+            triagensHistorico = dados.triagens || [];
+            saidasHistorico = dados.saidas || [];
+            retornosGuardados = dados.retornosGuardados || [];
+        }
+
+        // ===== INTEGRAÇÃO PALETCD =====
+        // Sincronizar paletes com PaletCD automaticamente
+        async function sincronizarComPaletCD(retorno) {
+            if (!firebaseInitialized) {
+                console.warn('⚠️ Firebase não disponível para sincronização com PaletCD');
+                return;
+            }
+
+            try {
+                const db = firebase.database();
+                
+                // Extrair materiais de palete/gaiola do retorno
+                const paletesGaiola = retorno.materiais.filter(m => 
+                    m.modelo.includes('PALETE') || m.modelo.includes('GAIOLA') || m.modelo.includes('EURO') || m.modelo.includes('CHEP')
+                );
+
+                if (paletesGaiola.length === 0) {
+                    console.log('ℹ️ Nenhum palete/gaiola neste retorno');
+                    return;
+                }
+
+                // Criar movimento no PaletCD
+                const movimentoPaletCD = {
+                    id: `REV-${retorno.id}`,
+                    tipo: 'Retorno de Loja',
+                    loja: retorno.loja,
+                    nf: retorno.nf,
+                    operador: retorno.operador,
+                    data: retorno.data,
+                    materiais: paletesGaiola,
+                    timestamp: new Date().toISOString(),
+                    origem: 'ReversaLog'
+                };
+
+                // Salvar no Firebase (compartilhado com PaletCD)
+                await db.ref(`paletcd/movimentos/${movimentoPaletCD.id}`).set(movimentoPaletCD);
+                
+                console.log('✅ Movimento criado no PaletCD:', movimentoPaletCD.id);
+            } catch (error) {
+                console.warn('⚠️ Erro ao sincronizar com PaletCD:', error);
+            }
+        }
+
+        // ===== CARREGAR DADOS AO ABRIR =====
+        window.addEventListener('load', async function() {
+            // Inicializar dados do sistema (90 lojas, 42 colaboradores, 13 produtos)
+            inicializarDadosSistema();
+            inicializarDataLists();
+            
+            // Carregar dados persistidos
+            await carregarDados();
+            atualizarOpcoesTriagem();
+            atualizarTabelas();
+            
+            console.log('✅ ReversaLog inicializado');
+        });
+
+    </script>
+</body>
+</html>
