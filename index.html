@@ -1412,24 +1412,8 @@
 
         // TRIAGEM
         function autofillTriagem() {
-            const retorno = document.getElementById('tri_retorno').value;
-            if (retorno === 'ret_001') {
-                document.getElementById('tri_data_rec').value = '2026-05-20';
-                document.getElementById('tri_loja').value = 'Piracicaba';
-                document.getElementById('tri_nf').value = '20234';
-                document.getElementById('tri_qtd').value = '99';
-            } else if (retorno === 'ret_002') {
-                document.getElementById('tri_data_rec').value = '2026-05-18';
-                document.getElementById('tri_loja').value = 'Carolina';
-                document.getElementById('tri_nf').value = '13003';
-                document.getElementById('tri_qtd').value = '50';
-            } else if (retorno === 'ret_003') {
-                document.getElementById('tri_data_rec').value = '2026-05-17';
-                document.getElementById('tri_loja').value = 'Bonfim';
-                document.getElementById('tri_nf').value = '15678';
-                document.getElementById('tri_qtd').value = '30';
-            }
-        }
+    // Dados virão do localStorage quando um retorno for selecionado
+}
 
         function limparFormTriagem() {
             document.getElementById('tri_retorno').value = '';
